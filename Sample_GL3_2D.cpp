@@ -1,4 +1,4 @@
-#include <iostream>
+#include<iostream>
 #include <cmath>
 #include <fstream>
 #include <vector>
@@ -202,7 +202,7 @@ float gravity = 0.5,airDrag = 0.1,friction = 0.1,t=0;
 float camera_rotation_angle = 90;
 
 class Border{
-	
+
 	char dir;
 	public:
 	VAO *bor[4];
@@ -216,95 +216,95 @@ class Border{
 		dir = d;
 	}
 	void create(int orient)
-        {
+	{
 
 		if(orient == 0 || orient == 2){
-                static const GLfloat vertex_buffer_data [] = {
-                        0,4,0, // vertex 1
-                        0.25,4,0, // vertex 2
-                        0.25,-4,0, // vertex 3
+			static const GLfloat vertex_buffer_data [] = {
+				0,4,0, // vertex 1
+				0.25,4,0, // vertex 2
+				0.25,-4,0, // vertex 3
 
-                        0.25,-4,0, // vertex 3
-                        0,-4,0, // vertex 4
-                        0,4,0, // vertex 1
-                };
+				0.25,-4,0, // vertex 3
+				0,-4,0, // vertex 4
+				0,4,0, // vertex 1
+			};
 
-		static const GLfloat color_buffer_data [] = {
-                        0.5,0.35,0.05, // color 1
-                        0.5,0.35,0.05, // color 1
-                        0.5,0.35,0.05, // color 1
+			static const GLfloat color_buffer_data [] = {
+				0.5,0.35,0.05, // color 1
+				0.5,0.35,0.05, // color 1
+				0.5,0.35,0.05, // color 1
 
-                        0.5,0.35,0.05, // color 1
-                        0.5,0.35,0.05, // color 1
-                        0.5,0.35,0.05, // color 1
-                };
+				0.5,0.35,0.05, // color 1
+				0.5,0.35,0.05, // color 1
+				0.5,0.35,0.05, // color 1
+			};
 
-                bor[orient] = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
+			bor[orient] = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
 
 		}
 		else{
-                static const GLfloat vertex_buffer_data [] = {
-                        4,0,0, // vertex 1
-                        4,0.25,0, // vertex 2
-                        -4,0.25,0, // vertex 3
+			static const GLfloat vertex_buffer_data [] = {
+				4,0,0, // vertex 1
+				4,0.25,0, // vertex 2
+				-4,0.25,0, // vertex 3
 
-                        -4,0.25,0, // vertex 3
-                        -4,0,0, // vertex 4
-                        4,0,0, // vertex 1
-                };
-		
-		static const GLfloat color_buffer_data [] = {
-                        0.5,0.35,0.05, // color 1
-                        0.5,0.35,0.05, // color 1
-                        0.5,0.35,0.05, // color 1
+				-4,0.25,0, // vertex 3
+				-4,0,0, // vertex 4
+				4,0,0, // vertex 1
+			};
 
-                        0.5,0.35,0.05, // color 1
-                        0.5,0.35,0.05, // color 1
-                        0.5,0.35,0.05, // color 1
-                };
+			static const GLfloat color_buffer_data [] = {
+				0.5,0.35,0.05, // color 1
+				0.5,0.35,0.05, // color 1
+				0.5,0.35,0.05, // color 1
 
-                bor[orient] = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
+				0.5,0.35,0.05, // color 1
+				0.5,0.35,0.05, // color 1
+				0.5,0.35,0.05, // color 1
+			};
+
+			bor[orient] = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
 
 		}
-        }
-	
-	        void draw(int orient){
-                glUseProgram (programID);
+	}
 
-                glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
-                glm::vec3 target (0, 0, 0);
-                glm::vec3 up (0, 1, 0);
+	void draw(int orient){
+		glUseProgram (programID);
 
-                Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
+		glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
+		glm::vec3 target (0, 0, 0);
+		glm::vec3 up (0, 1, 0);
 
-                glm::mat4 VP = Matrices.projection * Matrices.view;
-                glm::mat4 MVP;  // MVP = Projection * View * Model
-                Matrices.model = glm::mat4(1.0f);
+		Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
 
-                Matrices.model = glm::mat4(1.0f);
+		glm::mat4 VP = Matrices.projection * Matrices.view;
+		glm::mat4 MVP;  // MVP = Projection * View * Model
+		Matrices.model = glm::mat4(1.0f);
+
+		Matrices.model = glm::mat4(1.0f);
 		if(orient == 0){
-                	glm::mat4 translateBor0 = glm::translate (glm::vec3(3.75, 0, 0));
-                	Matrices.model *= (translateBor0);
+			glm::mat4 translateBor0 = glm::translate (glm::vec3(3.75, 0, 0));
+			Matrices.model *= (translateBor0);
 		}
 		else if(orient == 2){
-                	glm::mat4 translateBor2 = glm::translate (glm::vec3(-4, 0, 0));
-                Matrices.model *= (translateBor2);
+			glm::mat4 translateBor2 = glm::translate (glm::vec3(-4, 0, 0));
+			Matrices.model *= (translateBor2);
 		}
 		else if(orient == 1){
-                	glm::mat4 translateBor1 = glm::translate (glm::vec3(0, 3.75, 0));
-                Matrices.model *= (translateBor1);
+			glm::mat4 translateBor1 = glm::translate (glm::vec3(0, 3.75, 0));
+			Matrices.model *= (translateBor1);
 		}
 		else if(orient == 3){
-                	glm::mat4 translateBor3 = glm::translate (glm::vec3(0, -4, 0));
-                Matrices.model *= (translateBor3);
+			glm::mat4 translateBor3 = glm::translate (glm::vec3(0, -4, 0));
+			Matrices.model *= (translateBor3);
 		}
-                MVP = VP * Matrices.model;
-                glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
-                draw3DObject(bor[orient]);
+		MVP = VP * Matrices.model;
+		glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+		draw3DObject(bor[orient]);
 
-        }
-
+	}
 	
+
 };
 
 Border border[4];
@@ -326,8 +326,8 @@ class Target{
 		vel = 0;
 		theta = 0;
 		marks = 5;
-		center[0] = 3;
-		center[1] = 2.5;
+		center[0] = 7.0;
+		center[1] = 2.75;
 		radius = 0.7;
 		collided = false;
 	}
@@ -436,6 +436,9 @@ class Bird{
 	public:
 	float initX;
 	float initY;
+	float absy;
+	float absx;
+	float store;
 	VAO *bird;
 	Bird(){
 		lives = 3;
@@ -447,8 +450,11 @@ class Bird{
 		center[0] = 0.05;
 		center[1] = 0; 
 		radius = 0.12;
-		initX = 0;
+		initX = -3.5;
 		initY = 0;
+		absy = 0;
+		absx = 4;
+		store = 0;
 	}
 
 	float getX(){
@@ -560,8 +566,11 @@ class Bird{
 			//cout <<"position formula: " << posx << " " << posy << endl;
 			center[0]+=(posx-oldx);
 			center[1]+=(posy-oldy);
-			cout << "posx: " << posx << " posy: " << posy << endl;
-			cout << "centerx: " << center[0] << " centery: " << center[1] << endl;
+			//center[0] = initX + posx + (0.17/3);
+			//center[1] = initY + posy;
+			//cout << "posx: " << posx << " posy: " << posy << endl;
+			cout << "centerx: " << center[0] << " centery: " << center[1] << " absy: "<< absy + center[1] << endl;
+			cout << "check:absy  " << absy << endl;
 		}
 	}
 
@@ -577,27 +586,56 @@ class Bird{
 			return true;
 		}
 		else{
-		//	cout << "3.  "<< target.getCollided() << endl;
+			//	cout << "3.  "<< target.getCollided() << endl;
 			return false;	
 		}
 	}
 
 	void checkWall(){
 		float theta_old,vel_old,vel_new,theta_new,alpha=0.5;
-		if(center[0] > 3.6){
-		initX = posx;
-		initY = posy;
-		t=0;
-	//	cout << "check: " << initX << " " << initY << endl;
+		if(center[0] > 7.0){
+			initX = initX + posx;
+			initY = initY + posy;
+			absy = center[1];
+			store = absy + 3.75;
+			t=0;
+			absx = 8;
+			//cout << "check: " << initX << " " << initY << endl;
 
-	//	cout << "old: " << vel << " " << theta << endl;
-		theta_old = theta;
-		vel_old = vel;
-		vel_new = sqrt(((alpha*vel_old*cos(theta_old*M_PI/180.0f))*(alpha*vel_old*cos(theta_old*M_PI/180.0f)))+(vel_old*sin(theta_old*M_PI/180.0f)*(vel_old*sin(theta_old*M_PI/180.0f))));
-		theta_new = 180 - atan(sin(theta_old*M_PI/180.0f)/(alpha*cos(theta*M_PI/180.0f)));
-		vel = vel_new;
-		theta = theta_new;
-	//	cout << "new: " << vel << " " << theta << endl;
+			cout << "old: " << vel << " " << theta << endl;
+			theta_old = theta;
+			vel_old = vel;
+			vel_new = sqrt(((alpha*vel_old*cos(theta_old*M_PI/180.0f))*(alpha*vel_old*cos(theta_old*M_PI/180.0f)))+(vel_old*sin(theta_old*M_PI/180.0f)*(vel_old*sin(theta_old*M_PI/180.0f))));
+			theta_new = 180 - atan(sin(theta_old*M_PI/180.0f)/(alpha*cos(theta*M_PI/180.0f)));
+			vel = vel_new;
+			theta = theta_new;
+			cout << "new: " << vel << " " << theta << endl;
+		}
+		else if(center[0] < -7.0){
+			initX = initX + posx;
+			initY = initY + posy;
+			t=0;
+			absy = center[1];
+			//center[1] = 0;
+			absx = store + absy;
+			//cout << "check: " << initX << " " << initY << endl;
+			cout << "absx: " << absx << endl;
+			cout << "old: " << vel << " " << theta << endl;
+			theta_old = theta;
+			vel_old = vel;
+			vel_new = sqrt(((alpha*vel_old*cos(theta_old*M_PI/180.0f))*(alpha*vel_old*cos(theta_old*M_PI/180.0f)))+(vel_old*sin(theta_old*M_PI/180.0f)*(vel_old*sin(theta_old*M_PI/180.0f))));
+			theta_new = atan(sin(theta_old*M_PI/180.0f)/(alpha*cos(theta*M_PI/180.0f)));
+			vel = vel_new;
+			theta = theta_new;
+			cout << "new: " << vel << " " << theta << endl;
+
+		}
+
+	}
+
+	void checkFloor(){
+		if(center[1] <= -1*absx){
+			cout << "hit" << endl;
 		}
 	}
 
@@ -679,7 +717,7 @@ class Point{
 		time/=2;
 		//posx = angryBird.getVel()*cos(angryBird.getAngle()*M_PI/180.0f)*time;
 		//posy = angryBird.getVel()*sin(angryBird.getAngle()*M_PI/180.0f)*time - (0.5*gravity*time*time);
-		
+
 		posx = angryBird.getVel()*cos(angryBird.getAngle()*M_PI/180.0f)*time - (0.5*airDrag*cos(angryBird.getAngle()*M_PI/180.0f)*time*time);
 		posy = angryBird.getVel()*sin(angryBird.getAngle()*M_PI/180.0f)*time - (0.5*(gravity+(airDrag*sin(angryBird.getAngle()*M_PI/180.0f)))*time*time);
 		//glm::mat4 translateInit = glm::translate (glm::vec3(0, 0, 0));     
@@ -913,6 +951,7 @@ int main (int argc, char** argv)
 			;//cout << "collided!  " << endl;
 		}
 		angryBird.checkWall();
+		angryBird.checkFloor();
 		//if(angryBird.checkCollision(target)){
 		//	delete target;
 		//}
