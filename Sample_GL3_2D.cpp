@@ -2,7 +2,6 @@
 #include <cmath>
 #include <fstream>
 #include <vector>
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -201,6 +200,255 @@ void draw3DObject (struct VAO* vao)
 
 float gravity = 0.5,airDrag = 0.1,friction = 0.1,t=0;
 float camera_rotation_angle = 90;
+
+class Border{
+	
+	char dir;
+	public:
+	VAO *bor[4];
+	Border(){
+		dir = 'I';
+	}	
+	char getDir(){
+		return dir;
+	}
+	void setDir(char d){
+		dir = d;
+	}
+	void create(int orient)
+        {
+
+             	/*static const GLfloat vertex_buffer_data [] = {
+                        0,4,0, // vertex 1
+                        0.25,4,0, // vertex 2
+                        0.25,-4,0, // vertex 3
+
+                        0.25,-4,0, // vertex 3
+                        0,-4,0, // vertex 4
+                        0,4,0, // vertex 1
+                };*/
+		if(orient == 0 || orient == 2){
+                static const GLfloat vertex_buffer_data [] = {
+                        0,4,0, // vertex 1
+                        0.25,4,0, // vertex 2
+                        0.25,-4,0, // vertex 3
+
+                        0.25,-4,0, // vertex 3
+                        0,-4,0, // vertex 4
+                        0,4,0, // vertex 1
+                };
+
+		static const GLfloat color_buffer_data [] = {
+                        0.5,0.35,0.05, // color 1
+                        0.5,0.35,0.05, // color 1
+                        0.5,0.35,0.05, // color 1
+
+                        0.5,0.35,0.05, // color 1
+                        0.5,0.35,0.05, // color 1
+                        0.5,0.35,0.05, // color 1
+                };
+
+                // create3DObject creates and returns a handle to a VAO that can be used later
+                bor[orient] = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
+
+		}
+		else{
+                static const GLfloat vertex_buffer_data [] = {
+                        4,0,0, // vertex 1
+                        4,0.25,0, // vertex 2
+                        -4,0.25,0, // vertex 3
+
+                        -4,0.25,0, // vertex 3
+                        -4,0,0, // vertex 4
+                        4,0,0, // vertex 1
+                };
+		
+		static const GLfloat color_buffer_data [] = {
+                        0.5,0.35,0.05, // color 1
+                        0.5,0.35,0.05, // color 1
+                        0.5,0.35,0.05, // color 1
+
+                        0.5,0.35,0.05, // color 1
+                        0.5,0.35,0.05, // color 1
+                        0.5,0.35,0.05, // color 1
+                };
+
+                // create3DObject creates and returns a handle to a VAO that can be used later
+                bor[orient] = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
+
+		}
+              /*  static const GLfloat color_buffer_data [] = {
+                        0.5,0.35,0.05, // color 1
+                        0.5,0.35,0.05, // color 1
+                        0.5,0.35,0.05, // color 1
+                   
+		        0.5,0.35,0.05, // color 1
+                        0.5,0.35,0.05, // color 1
+                        0.5,0.35,0.05, // color 1
+                };
+
+                // create3DObject creates and returns a handle to a VAO that can be used later
+                bor[orient] = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);*/
+        }
+	
+	        void draw(int orient){
+                glUseProgram (programID);
+
+                glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
+                glm::vec3 target (0, 0, 0);
+                glm::vec3 up (0, 1, 0);
+
+                Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
+
+                glm::mat4 VP = Matrices.projection * Matrices.view;
+                glm::mat4 MVP;  // MVP = Projection * View * Model
+                Matrices.model = glm::mat4(1.0f);
+
+                Matrices.model = glm::mat4(1.0f);
+		if(orient == 0){
+                	glm::mat4 translateBor0 = glm::translate (glm::vec3(3.75, 0, 0));
+                	Matrices.model *= (translateBor0);
+		}
+		else if(orient == 2){
+                	glm::mat4 translateBor2 = glm::translate (glm::vec3(-4, 0, 0));
+                Matrices.model *= (translateBor2);
+		}
+		else if(orient == 1){
+                	glm::mat4 translateBor1 = glm::translate (glm::vec3(0, 3.75, 0));
+                Matrices.model *= (translateBor1);
+		}
+		else if(orient == 3){
+                	glm::mat4 translateBor3 = glm::translate (glm::vec3(0, -4, 0));
+                Matrices.model *= (translateBor3);
+		}
+                MVP = VP * Matrices.model;
+                glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+                draw3DObject(bor[orient]);
+
+        }
+
+	
+};
+
+Border border[4];
+
+class Target{
+	float posx;
+	float posy;
+	float vel;
+	float theta;
+	float marks;
+	float center[2];
+	float radius;
+	bool collided;
+	public:
+	VAO *tar;
+	Target(){
+		posx = 2.5;
+		posy = 2;
+		vel = 0;
+		theta = 0;
+		marks = 5;
+		center[0] = 7;
+		center[1] = 2.5;
+		radius = 0.7;
+		collided = false;
+	}
+	//~Target(){cout<<"deleted"<<endl;}
+	float getX(){
+		return posx;
+	}
+	float getY(){
+		return posy;
+	}
+	void setX(int x){
+		posx = x;
+	}
+	void setY(int y){
+		posy = y;
+	}
+	float getMarks(){
+		return marks;
+	}
+	float* getCenter(){
+		return center;
+	}
+	float getRadius(){
+		return radius;
+	}
+	bool getCollided(){
+		return collided;
+	}
+	void setCollided(bool col){
+		collided = col;
+	}
+	void setMarks(int m){
+		marks = m;
+	}
+	void setCenter(float cx,float cy){
+		center[0] = cx;
+		center[1] = cy;
+	}
+	void setRadius(float r){
+		radius = r;
+	}
+
+	void create()
+	{
+		static const GLfloat vertex_buffer_data [] = {
+			0,0,0, // vertex 1
+			1,0,0, // vertex 2
+			1,1,0, // vertex 3
+
+			1,1,0, // vertex 3
+			0,1,0, // vertex 4
+			0,0,0, // vertex 1
+		};
+
+		static const GLfloat color_buffer_data [] = {
+			0,1,0, // color 1
+			0,1,0, // color 2
+			0,1,0, // color 3
+
+			0,1,0, // color 3
+			0,1,0, // color 4
+			0,1,0, // color 1
+		};
+
+		// create3DObject creates and returns a handle to a VAO that can be used later
+		tar = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
+	}
+
+	void draw(){
+		glUseProgram (programID);
+
+		glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
+		glm::vec3 target (0, 0, 0);
+		glm::vec3 up (0, 1, 0);
+
+		Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
+
+		glm::mat4 VP = Matrices.projection * Matrices.view;
+		glm::mat4 MVP;  // MVP = Projection * View * Model
+		Matrices.model = glm::mat4(1.0f);
+
+		Matrices.model = glm::mat4(1.0f);
+
+		glm::mat4 translateTar = glm::translate (glm::vec3(posx, posy, 0));
+		//center[0]+=posx;
+		//center[1]+=posy;
+		//cout << center[0] << " " << center[1] << endl;
+		//glm::mat4 translatePoint = glm::translate(glm::vec3((float)(-1.0f + posx),(float)(posy), 0.0f));
+		Matrices.model *= (translateTar);
+		MVP = VP * Matrices.model;
+		glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+		draw3DObject(tar);
+
+	}
+
+};
+//bool smash = false;
+Target target;
 class Bird{
 	int lives;
 	float posx;
@@ -208,6 +456,8 @@ class Bird{
 	float vel;
 	float theta;
 	bool isMoving; 
+	float center[2];
+	float radius;
 	public:
 	VAO *bird;
 	Bird(){
@@ -217,6 +467,9 @@ class Bird{
 		theta = 45;
 		posx = 0;
 		posy = 0;
+		center[0] = 0.05;
+		center[1] = 0; 
+		radius = 0.12;
 	}
 
 	float getX(){
@@ -233,6 +486,12 @@ class Bird{
 	}
 	float getStatus(){
 		return isMoving;
+	}
+	float *getCenter(){
+		return center;
+	}
+	float getRadius(){
+		return radius;
 	}
 
 	void setStatus(bool st){
@@ -251,13 +510,20 @@ class Bird{
 	void setAngle(float ang){
 		theta = ang;
 	}
+	void setCenter(float cx,float cy){
+		center[0] = cx;
+		center[1] = cy;
+	}
+	void setRadius(float r){
+		radius = r;
+	}
 
 	void create(){
 		// GL3 accepts only Triangles. Quads are not supported
 		static const GLfloat vertex_buffer_data [] = {
-			0.3,0,0, // vertex 1
-			0,0.2,0, // vertex 2
-			0,-0.2,0, // vertex 3
+			0.17,0,0, // vertex 1
+			0,0.1,0, // vertex 2
+			0,-0.1,0, // vertex 3
 
 			//0.6, 0.6,0, // vertex 3
 			//-0.6, 0.6,0, // vertex 4
@@ -304,21 +570,46 @@ class Bird{
 
 
 		// Render your scene 
-
 		Matrices.model = glm::mat4(1.0f);
 
-		glm::mat4 translateSquare = glm::translate (glm::vec3(-2, 0, 0));        // glTranslatef
-		glm::mat4 moveSquare = glm::translate(glm::vec3((float)(-2.0f+posx),float(0.0f+posy),0.0f)); 
+		glm::mat4 translateSquare = glm::translate (glm::vec3(-1.75, 0, 0));        // glTranslatef
+		glm::mat4 moveSquare = glm::translate(glm::vec3((float)(-1.75f+posx),float(0.0f+posy),0.0f)); 
+
 		Matrices.model *= (translateSquare * moveSquare);
 		MVP = VP * Matrices.model;
 		glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
 		draw3DObject(bird);
 		if(isMoving){
+			float oldx,oldy;
+			oldx = posx;
+			oldy = posy;
 			posx = vel*cos(theta*M_PI/180.0f)*t - (0.5*airDrag*cos(theta*M_PI/180.0f)*t*t);
 			posy = vel*sin(theta*M_PI/180.0f)*t - (0.5*(gravity+(airDrag*sin(theta*M_PI/180.0f)))*t*t);
+			center[0]+=(posx-oldx);
+			center[1]+=(posy-oldy);
+			//cout << "posx: " << posx << " posy: " << posy << endl;
+			//cout << "centerx: " << center[0] << " centery: " << center[1] << endl;
 		}
 	}
+
+	bool checkCollision(){
+		int cx,cy;
+		cx = target.getCenter()[0];
+		cy = target.getCenter()[1];
+		//cout << "1.  "<< target.getCollided() << endl;
+		if(sqrt(((center[0]-cx)*(center[0]-cx))+((center[1]-cy)*(center[1]-cy)))<=(radius +target.getRadius())){
+			target.setCollided(true);		
+			//smash = true;
+			//cout << "2.  "<< target.getCollided() << endl;
+			return true;
+		}
+		else{
+		//	cout << "3.  "<< target.getCollided() << endl;
+			return false;	
+		}
+	}
+
 };
 Bird angryBird;
 
@@ -326,6 +617,7 @@ class Point{
 	float posx;
 	float posy;
 	public:
+
 	VAO *point;
 	Point(){
 		posx = 0;
@@ -394,11 +686,11 @@ class Point{
 		//posx = angryBird.getVel()*cos(angryBird.getAngle()*M_PI/180.0f)*time;
 		//posy = angryBird.getVel()*sin(angryBird.getAngle()*M_PI/180.0f)*time - (0.5*gravity*time*time);
 
-			posx = angryBird.getVel()*cos(angryBird.getAngle()*M_PI/180.0f)*time - (0.5*airDrag*cos(angryBird.getAngle()*M_PI/180.0f)*time*time);
-			posy = angryBird.getVel()*sin(angryBird.getAngle()*M_PI/180.0f)*time - (0.5*(gravity+(airDrag*sin(angryBird.getAngle()*M_PI/180.0f)))*time*time);
-		glm::mat4 translateInit = glm::translate (glm::vec3(-1.0, 0, 0));     
+		posx = angryBird.getVel()*cos(angryBird.getAngle()*M_PI/180.0f)*time - (0.5*airDrag*cos(angryBird.getAngle()*M_PI/180.0f)*time*time);
+		posy = angryBird.getVel()*sin(angryBird.getAngle()*M_PI/180.0f)*time - (0.5*(gravity+(airDrag*sin(angryBird.getAngle()*M_PI/180.0f)))*time*time);
+		glm::mat4 translateInit = glm::translate (glm::vec3(-0.75, 0, 0));     
 
-		glm::mat4 translatePoint = glm::translate(glm::vec3((float)(-1.0f + posx),(float)(posy), 0.0f));        
+		glm::mat4 translatePoint = glm::translate(glm::vec3((float)(-0.75f + posx),(float)(posy), 0.0f));        
 		Matrices.model *= (translateInit*translatePoint);
 		MVP = VP * Matrices.model;
 		glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
@@ -408,17 +700,11 @@ class Point{
 };
 
 Point path[20];
+
 /**************************
  * Customizable functions *
  **************************/
 
-/*float square_rot_dir = 1;
-  float square_dir = 1;
-  bool square_rot_status = false;*/
-//bool start_movement = false;
-//float theta = 45,v=1.2;
-/* Executed when a regular key is pressed/released/held-down */
-/* Prefered for Keyboard events */
 void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	// Function is called first on GLFW_PRESS.
@@ -513,118 +799,6 @@ void reshapeWindow (GLFWwindow* window, int width, int height)
 	Matrices.projection = glm::ortho(-4.0f, 4.0f, -4.0f, 4.0f, 0.1f, 500.0f);
 }
 
-//VAO *bird, *point[20];
-
-
-/*
-
-   void createPoint(int i)
-   {
-// GL3 accepts only Triangles. Quads are not supported
-static const GLfloat vertex_buffer_data [] = {
--2,0,0, // vertex 1
--2,0.03,0, // vertex 2
--2.08,0.03,0, // vertex 3
-
--2.08,0.03,0, // vertex 3
--2.08,0,0, // vertex 4
--2,0,0, // vertex 1
-};
-
-static const GLfloat color_buffer_data [] = {
-1,1,1, // color 1
-1,1,1, // color 2
-1,1,1, // color 3
-
-1,1,1, // color 3
-1,1,1, // color 4
-1,1,1, // color 1
-};
-
-// create3DObject creates and returns a handle to a VAO that can be used later
-point[i] = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
-}
-
-float acc = 0.05;
-float square_rotation = 0;
-float square_movement = 0;
-float p_x=0,p_y=0,t=0,g=0.5;
-
-// Render the scene with openGL 
-// Edit this function according to your assignment 
-void draw ()
-{
-// clear the color and depth in the frame buffer
-glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-// use the loaded shader program
-// Don't change unless you know what you are doing
-glUseProgram (programID);
-
-// Eye - Location of camera. Don't change unless you are sure!!
-glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
-// Target - Where is the camera looking at.  Don't change unless you are sure!!
-glm::vec3 target (0, 0, 0);
-// Up - Up vector defines tilt of camera.  Don't change unless you are sure!!
-glm::vec3 up (0, 1, 0);
-
-// Compute Camera matrix (view)
-// Matrices.view = glm::lookAt( eye, target, up ); // Rotating Camera for 3D
-//  Don't change unless you are sure!!
-Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
-
-// Compute ViewProject matrix as view/camera might not be changed for this frame (basic scenario)
-//  Don't change unless you are sure!!
-glm::mat4 VP = Matrices.projection * Matrices.view;
-
-// Send our transformation to the currently bound shader, in the "MVP" uniform
-// For each model you render, since the MVP will be different (at least the M part)
-//  Don't change unless you are sure!!
-glm::mat4 MVP;	// MVP = Projection * View * Model
-
-// Load identity to model matrix
-Matrices.model = glm::mat4(1.0f);
-
-
-// Render your scene 
-
-Matrices.model = glm::mat4(1.0f);
-
-glm::mat4 translateSquare = glm::translate (glm::vec3(-2, 0, 0));        // glTranslatef
-glm::mat4 moveSquare = glm::translate(glm::vec3((float)(-2.0f+p_x),float(0.0f+p_y),0.0f)); 
-Matrices.model *= (translateSquare * moveSquare);
-MVP = VP * Matrices.model;
-glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
-
-// draw3DObject draws the VAO given to it using current MVP matrix
-draw3DObject(square);
-if(start_movement){
-	p_x = v*cos(theta*M_PI/180.0f)*t;
-	p_y = v*sin(theta*M_PI/180.0f)*t - (0.5*g*t*t);
-}
-
-//-------------- End of Projectile --------------------
-int i = 0;
-float rect_x=0,rect_y=0,time;
-for(i=1;i<15;i++){
-	Matrices.model = glm::mat4(1.0f);
-
-	time = 0.5*i;
-	rect_x = v*cos(theta*M_PI/180.0f)*time;
-	rect_y = v*sin(theta*M_PI/180.0f)*time - (0.5*g*time*time);
-
-	glm::mat4 translateInit = glm::translate (glm::vec3(-1.0, 0, 0));     
-
-	glm::mat4 translatePoint = glm::translate(glm::vec3((float)(-1.0f + rect_x),(float)(rect_y), 0.0f));        
-	Matrices.model *= (translateInit*translatePoint);
-	MVP = VP * Matrices.model;
-	glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
-	draw3DObject(point[i]);
-}
-
-//------------End of path code--------------------------
-}
-*/
 /* Initialise glfw window, I/O callbacks and the renderer to use */
 /* Nothing to Edit here */
 GLFWwindow* initGLFW (int width, int height)
@@ -682,10 +856,15 @@ void initGL (GLFWwindow* window, int width, int height)
 	// Create the models
 	//createTriangle (); // Generate the VAO, VBOs, vertices data & copy into the array buffer
 	//createRectangle ();
+	border[0].create(0);
+	border[1].create(2);
+	border[2].create(1);
+	border[3].create(3);
 	angryBird.create ();
 	for(i=1;i<20;i++){
 		path[i].create();
 	}
+	target.create();
 	// Create and compile our GLSL program from the shaders
 	programID = LoadShaders( "Sample_GL.vert", "Sample_GL.frag" );
 	// Get a handle for our "MVP" uniform
@@ -719,15 +898,28 @@ int main (int argc, char** argv)
 	double last_update_time = glfwGetTime(), current_time;
 
 	/* Draw in loop */
+	target.draw();
 	while (!glfwWindowShouldClose(window)) {
 
 		// OpenGL Draw commands
 		angryBird.draw();
+		border[0].draw(0);
+		border[1].draw(2);
+		border[2].draw(1);
+		border[3].draw(3);
 		//path.draw();
 		for(i=1;i<20;i++){
 			path[i].draw(i);
 		}
-
+		if(!target.getCollided()&&!angryBird.checkCollision()){
+			target.draw();
+		}
+		else{
+			cout << "collided!  " << endl;
+		}	
+		//if(angryBird.checkCollision(target)){
+		//	delete target;
+		//}
 		// Swap Frame Buffer in double buffering
 		glfwSwapBuffers(window);
 
