@@ -198,7 +198,7 @@ void draw3DObject (struct VAO* vao)
 	glDrawArrays(vao->PrimitiveMode, 0, vao->NumVertices); // Starting from vertex 0; 3 vertices total -> 1 triangle
 }
 
-float gravity = 0.5,airDrag = 0.1,friction = 0.1,t=0;
+float gravity = 0.5,airDrag = 0.1,friction = 0.1,t=0,groundDrag = 5;
 float camera_rotation_angle = 90;
 
 class Border{
@@ -326,8 +326,8 @@ class Target{
 		vel = 0;
 		theta = 0;
 		marks = 5;
-		center[0] = 7.0;
-		center[1] = 2.75;
+		center[0] = 3.0;
+		center[1] = 2.5;
 		radius = 0.7;
 		collided = false;
 	}
@@ -439,6 +439,9 @@ class Bird{
 	float absy;
 	float absx;
 	float store;
+	float newv;
+	bool floor;
+	bool flag;
 	VAO *bird;
 	Bird(){
 		lives = 3;
@@ -455,6 +458,8 @@ class Bird{
 		absy = 0;
 		absx = 4;
 		store = 0;
+		floor = false;
+		flag = true;
 	}
 
 	float getX(){
@@ -555,22 +560,28 @@ class Bird{
 		Matrices.model *= (moveSquare);
 		MVP = VP * Matrices.model;
 		glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
-
+		
 		draw3DObject(bird);
-		if(isMoving){
+		if(floor){
+	
+			if(flag)	
+				posx = posx + vel*cos(theta*M_PI/180.0f)*t - 0.5*groundDrag*t*t;
+				newv =  vel*cos(theta*M_PI/180.0f)*t - 0.5*groundDrag*t*t;
+				cout << "diff: "  << newv << endl;
+			if(vel*cos(theta*M_PI/180.0f) <= 0.5*groundDrag*t)
+				flag = false;
+		}
+		else if(isMoving){
 			float oldx,oldy;
 			oldx = posx;
 			oldy = posy;
 			posx = vel*cos(theta*M_PI/180.0f)*t - (0.5*airDrag*cos(theta*M_PI/180.0f)*t*t);
 			posy = vel*sin(theta*M_PI/180.0f)*t - (0.5*(gravity+(airDrag*sin(theta*M_PI/180.0f)))*t*t);
-			//cout <<"position formula: " << posx << " " << posy << endl;
-			center[0]+=(posx-oldx);
-			center[1]+=(posy-oldy);
-			//center[0] = initX + posx + (0.17/3);
-			//center[1] = initY + posy;
+			center[0] = initX + posx + (0.17/3);
+			center[1] = initY + posy;
 			//cout << "posx: " << posx << " posy: " << posy << endl;
-			cout << "centerx: " << center[0] << " centery: " << center[1] << " absy: "<< absy + center[1] << endl;
-			cout << "check:absy  " << absy << endl;
+			//cout << "centerx: " << center[0] << " centery: " << center[1] << " absy: "<< absy + center[1] << endl;
+		
 		}
 	}
 
@@ -592,8 +603,8 @@ class Bird{
 	}
 
 	void checkWall(){
-		float theta_old,vel_old,vel_new,theta_new,alpha=0.5;
-		if(center[0] > 7.0){
+		float theta_old,vel_old,vel_new,theta_new,alpha=0.8;
+		if(center[0] > 3.75){
 			initX = initX + posx;
 			initY = initY + posy;
 			absy = center[1];
@@ -602,16 +613,16 @@ class Bird{
 			absx = 8;
 			//cout << "check: " << initX << " " << initY << endl;
 
-			cout << "old: " << vel << " " << theta << endl;
+			//cout << "old: " << vel << " " << theta << endl;
 			theta_old = theta;
 			vel_old = vel;
 			vel_new = sqrt(((alpha*vel_old*cos(theta_old*M_PI/180.0f))*(alpha*vel_old*cos(theta_old*M_PI/180.0f)))+(vel_old*sin(theta_old*M_PI/180.0f)*(vel_old*sin(theta_old*M_PI/180.0f))));
 			theta_new = 180 - atan(sin(theta_old*M_PI/180.0f)/(alpha*cos(theta*M_PI/180.0f)));
 			vel = vel_new;
 			theta = theta_new;
-			cout << "new: " << vel << " " << theta << endl;
+			//cout << "new: " << vel << " " << theta << endl;
 		}
-		else if(center[0] < -7.0){
+		else if(center[0] < -3.75){
 			initX = initX + posx;
 			initY = initY + posy;
 			t=0;
@@ -619,23 +630,25 @@ class Bird{
 			//center[1] = 0;
 			absx = store + absy;
 			//cout << "check: " << initX << " " << initY << endl;
-			cout << "absx: " << absx << endl;
-			cout << "old: " << vel << " " << theta << endl;
+			//cout << "absx: " << absx << endl;
+			//cout << "old: " << vel << " " << theta << endl;
 			theta_old = theta;
 			vel_old = vel;
 			vel_new = sqrt(((alpha*vel_old*cos(theta_old*M_PI/180.0f))*(alpha*vel_old*cos(theta_old*M_PI/180.0f)))+(vel_old*sin(theta_old*M_PI/180.0f)*(vel_old*sin(theta_old*M_PI/180.0f))));
 			theta_new = atan(sin(theta_old*M_PI/180.0f)/(alpha*cos(theta*M_PI/180.0f)));
 			vel = vel_new;
 			theta = theta_new;
-			cout << "new: " << vel << " " << theta << endl;
+			//cout << "new: " << vel << " " << theta << endl;
 
 		}
 
 	}
 
 	void checkFloor(){
-		if(center[1] <= -1*absx){
-			cout << "hit" << endl;
+		if(center[1] <= -3.5&&!floor){
+			//cout << "hit" << endl;
+			t = 0;
+			floor = true;	
 		}
 	}
 
