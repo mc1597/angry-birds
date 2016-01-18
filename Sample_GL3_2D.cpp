@@ -218,15 +218,6 @@ class Border{
 	void create(int orient)
         {
 
-             	/*static const GLfloat vertex_buffer_data [] = {
-                        0,4,0, // vertex 1
-                        0.25,4,0, // vertex 2
-                        0.25,-4,0, // vertex 3
-
-                        0.25,-4,0, // vertex 3
-                        0,-4,0, // vertex 4
-                        0,4,0, // vertex 1
-                };*/
 		if(orient == 0 || orient == 2){
                 static const GLfloat vertex_buffer_data [] = {
                         0,4,0, // vertex 1
@@ -248,7 +239,6 @@ class Border{
                         0.5,0.35,0.05, // color 1
                 };
 
-                // create3DObject creates and returns a handle to a VAO that can be used later
                 bor[orient] = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
 
 		}
@@ -273,22 +263,9 @@ class Border{
                         0.5,0.35,0.05, // color 1
                 };
 
-                // create3DObject creates and returns a handle to a VAO that can be used later
                 bor[orient] = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
 
 		}
-              /*  static const GLfloat color_buffer_data [] = {
-                        0.5,0.35,0.05, // color 1
-                        0.5,0.35,0.05, // color 1
-                        0.5,0.35,0.05, // color 1
-                   
-		        0.5,0.35,0.05, // color 1
-                        0.5,0.35,0.05, // color 1
-                        0.5,0.35,0.05, // color 1
-                };
-
-                // create3DObject creates and returns a handle to a VAO that can be used later
-                bor[orient] = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);*/
         }
 	
 	        void draw(int orient){
@@ -349,12 +326,11 @@ class Target{
 		vel = 0;
 		theta = 0;
 		marks = 5;
-		center[0] = 7;
+		center[0] = 3;
 		center[1] = 2.5;
 		radius = 0.7;
 		collided = false;
 	}
-	//~Target(){cout<<"deleted"<<endl;}
 	float getX(){
 		return posx;
 	}
@@ -447,7 +423,6 @@ class Target{
 	}
 
 };
-//bool smash = false;
 Target target;
 class Bird{
 	int lives;
@@ -459,6 +434,8 @@ class Bird{
 	float center[2];
 	float radius;
 	public:
+	float initX;
+	float initY;
 	VAO *bird;
 	Bird(){
 		lives = 3;
@@ -470,6 +447,8 @@ class Bird{
 		center[0] = 0.05;
 		center[1] = 0; 
 		radius = 0.12;
+		initX = 0;
+		initY = 0;
 	}
 
 	float getX(){
@@ -519,15 +498,11 @@ class Bird{
 	}
 
 	void create(){
-		// GL3 accepts only Triangles. Quads are not supported
 		static const GLfloat vertex_buffer_data [] = {
 			0.17,0,0, // vertex 1
 			0,0.1,0, // vertex 2
 			0,-0.1,0, // vertex 3
 
-			//0.6, 0.6,0, // vertex 3
-			//-0.6, 0.6,0, // vertex 4
-			//-0.6,-0.6,0  // vertex 1
 		};
 
 		static const GLfloat color_buffer_data [] = {
@@ -535,12 +510,8 @@ class Bird{
 			1,1,0, // color 2
 			1,1,0, // color 3
 
-			//1,1,0.4, // color 3
-			//0.5,0.5,0.5, // color 4
-			//1,1,0  // color 1
 		};
 
-		// create3DObject creates and returns a handle to a VAO that can be used later
 		bird = create3DObject(GL_TRIANGLES, 3, vertex_buffer_data, color_buffer_data, GL_FILL);
 	}
 
@@ -572,10 +543,10 @@ class Bird{
 		// Render your scene 
 		Matrices.model = glm::mat4(1.0f);
 
-		glm::mat4 translateSquare = glm::translate (glm::vec3(-1.75, 0, 0));        // glTranslatef
-		glm::mat4 moveSquare = glm::translate(glm::vec3((float)(-1.75f+posx),float(0.0f+posy),0.0f)); 
-
-		Matrices.model *= (translateSquare * moveSquare);
+		//glm::mat4 translateSquare = glm::translate (glm::vec3(initX, initY, 0));        // glTranslatef
+		glm::mat4 moveSquare = glm::translate(glm::vec3((float)(initX+posx),float(initY+posy),0.0f)); 
+		//cout <<"current: " << initX + posx << " " << initY + posy << endl;
+		Matrices.model *= (moveSquare);
 		MVP = VP * Matrices.model;
 		glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
@@ -586,10 +557,11 @@ class Bird{
 			oldy = posy;
 			posx = vel*cos(theta*M_PI/180.0f)*t - (0.5*airDrag*cos(theta*M_PI/180.0f)*t*t);
 			posy = vel*sin(theta*M_PI/180.0f)*t - (0.5*(gravity+(airDrag*sin(theta*M_PI/180.0f)))*t*t);
+			//cout <<"position formula: " << posx << " " << posy << endl;
 			center[0]+=(posx-oldx);
 			center[1]+=(posy-oldy);
-			//cout << "posx: " << posx << " posy: " << posy << endl;
-			//cout << "centerx: " << center[0] << " centery: " << center[1] << endl;
+			cout << "posx: " << posx << " posy: " << posy << endl;
+			cout << "centerx: " << center[0] << " centery: " << center[1] << endl;
 		}
 	}
 
@@ -598,7 +570,7 @@ class Bird{
 		cx = target.getCenter()[0];
 		cy = target.getCenter()[1];
 		//cout << "1.  "<< target.getCollided() << endl;
-		if(sqrt(((center[0]-cx)*(center[0]-cx))+((center[1]-cy)*(center[1]-cy)))<=(radius +target.getRadius())){
+		if(sqrt(((center[0]-cx)*(center[0]-cx))+((center[1]-cy)*(center[1]-cy)))<=(radius + target.getRadius())){
 			target.setCollided(true);		
 			//smash = true;
 			//cout << "2.  "<< target.getCollided() << endl;
@@ -610,6 +582,25 @@ class Bird{
 		}
 	}
 
+	void checkWall(){
+		float theta_old,vel_old,vel_new,theta_new,alpha=0.5;
+		if(center[0] > 3.6){
+		initX = posx;
+		initY = posy;
+		t=0;
+	//	cout << "check: " << initX << " " << initY << endl;
+
+	//	cout << "old: " << vel << " " << theta << endl;
+		theta_old = theta;
+		vel_old = vel;
+		vel_new = sqrt(((alpha*vel_old*cos(theta_old*M_PI/180.0f))*(alpha*vel_old*cos(theta_old*M_PI/180.0f)))+(vel_old*sin(theta_old*M_PI/180.0f)*(vel_old*sin(theta_old*M_PI/180.0f))));
+		theta_new = 180 - atan(sin(theta_old*M_PI/180.0f)/(alpha*cos(theta*M_PI/180.0f)));
+		vel = vel_new;
+		theta = theta_new;
+	//	cout << "new: " << vel << " " << theta << endl;
+		}
+	}
+
 };
 Bird angryBird;
 
@@ -617,11 +608,14 @@ class Point{
 	float posx;
 	float posy;
 	public:
-
+	float initX;
+	float initY;
 	VAO *point;
 	Point(){
 		posx = 0;
 		posy = 0;
+		initX = 0;
+		initY = 0;
 	}
 
 	float getX(){
@@ -640,13 +634,13 @@ class Point{
 	void create()
 	{
 		static const GLfloat vertex_buffer_data [] = {
-			-2,0,0, // vertex 1
-			-2,0.03,0, // vertex 2
-			-2.08,0.03,0, // vertex 3
+			0,0,0, // vertex 1
+			0,0.03,0, // vertex 2
+			0.08,0.03,0, // vertex 3
 
-			-2.08,0.03,0, // vertex 3
-			-2.08,0,0, // vertex 4
-			-2,0,0, // vertex 1
+			0.08,0.03,0, // vertex 3
+			0.08,0,0, // vertex 4
+			0,0,0, // vertex 1
 		};
 
 		static const GLfloat color_buffer_data [] = {
@@ -685,13 +679,14 @@ class Point{
 		time/=2;
 		//posx = angryBird.getVel()*cos(angryBird.getAngle()*M_PI/180.0f)*time;
 		//posy = angryBird.getVel()*sin(angryBird.getAngle()*M_PI/180.0f)*time - (0.5*gravity*time*time);
-
+		
 		posx = angryBird.getVel()*cos(angryBird.getAngle()*M_PI/180.0f)*time - (0.5*airDrag*cos(angryBird.getAngle()*M_PI/180.0f)*time*time);
 		posy = angryBird.getVel()*sin(angryBird.getAngle()*M_PI/180.0f)*time - (0.5*(gravity+(airDrag*sin(angryBird.getAngle()*M_PI/180.0f)))*time*time);
-		glm::mat4 translateInit = glm::translate (glm::vec3(-0.75, 0, 0));     
-
-		glm::mat4 translatePoint = glm::translate(glm::vec3((float)(-0.75f + posx),(float)(posy), 0.0f));        
-		Matrices.model *= (translateInit*translatePoint);
+		//glm::mat4 translateInit = glm::translate (glm::vec3(0, 0, 0));     
+		initX = angryBird.initX;
+		initY = angryBird.initY;
+		glm::mat4 translatePoint = glm::translate(glm::vec3((float)(initX + posx),(float)(initY + posy), 0.0f));        
+		Matrices.model *= (translatePoint);
 		MVP = VP * Matrices.model;
 		glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 		draw3DObject(point);
@@ -915,8 +910,9 @@ int main (int argc, char** argv)
 			target.draw();
 		}
 		else{
-			cout << "collided!  " << endl;
-		}	
+			;//cout << "collided!  " << endl;
+		}
+		angryBird.checkWall();
 		//if(angryBird.checkCollision(target)){
 		//	delete target;
 		//}
