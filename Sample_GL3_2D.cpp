@@ -198,7 +198,7 @@ void draw3DObject (struct VAO* vao)
 	glDrawArrays(vao->PrimitiveMode, 0, vao->NumVertices); // Starting from vertex 0; 3 vertices total -> 1 triangle
 }
 
-float gravity = 0.5,airDrag = 0.1,friction = 0.1,t=0,groundDrag = 5;
+float gravity = 0.5,airDrag = 0.1,friction = 0.1,t=0,groundDrag = 0.5;
 float camera_rotation_angle = 90;
 
 class Border{
@@ -234,9 +234,9 @@ class Border{
 				0.5,0.35,0.05, // color 1
 				0.5,0.35,0.05, // color 1
 
-				0.5,0.35,0.05, // color 1
-				0.5,0.35,0.05, // color 1
-				0.5,0.35,0.05, // color 1
+				1,0.5,0, // color 1
+				1,0.5,0, // color 1
+				1,0.5,0, // color 1
 			};
 
 			bor[orient] = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
@@ -254,13 +254,14 @@ class Border{
 			};
 
 			static const GLfloat color_buffer_data [] = {
-				0.5,0.35,0.05, // color 1
-				0.5,0.35,0.05, // color 1
-				0.5,0.35,0.05, // color 1
+				1,0.5,0, // color 1
+				1,0.5,0, // color 1
+				1,0.5,0, // color 1
 
 				0.5,0.35,0.05, // color 1
 				0.5,0.35,0.05, // color 1
 				0.5,0.35,0.05, // color 1
+
 			};
 
 			bor[orient] = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
@@ -321,14 +322,14 @@ class Target{
 	public:
 	VAO *tar;
 	Target(){
-		posx = 2.5;
+		posx = 2;
 		posy = 2;
 		vel = 0;
 		theta = 0;
 		marks = 5;
-		center[0] = 3.0;
-		center[1] = 2.5;
-		radius = 0.7;
+		center[0] = 2.25;
+		center[1] = 2.25;
+		radius = 0.35;
 		collided = false;
 	}
 	float getX(){
@@ -373,11 +374,11 @@ class Target{
 	{
 		static const GLfloat vertex_buffer_data [] = {
 			0,0,0, // vertex 1
-			1,0,0, // vertex 2
-			1,1,0, // vertex 3
+			0.5,0,0, // vertex 2
+			0.5,0.5,0, // vertex 3
 
-			1,1,0, // vertex 3
-			0,1,0, // vertex 4
+			0.5,0.5,0, // vertex 3
+			0,0.5,0, // vertex 4
 			0,0,0, // vertex 1
 		};
 
@@ -556,20 +557,21 @@ class Bird{
 
 		//glm::mat4 translateSquare = glm::translate (glm::vec3(initX, initY, 0));        // glTranslatef
 		glm::mat4 moveSquare = glm::translate(glm::vec3((float)(initX+posx),float(initY+posy),0.0f)); 
-		//cout <<"current: " << initX + posx << " " << initY + posy << endl;
 		Matrices.model *= (moveSquare);
 		MVP = VP * Matrices.model;
 		glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 		
 		draw3DObject(bird);
 		if(floor){
-	
-			if(flag)	
-				posx = posx + vel*cos(theta*M_PI/180.0f)*t - 0.5*groundDrag*t*t;
-				newv =  vel*cos(theta*M_PI/180.0f)*t - 0.5*groundDrag*t*t;
-				cout << "diff: "  << newv << endl;
-			if(vel*cos(theta*M_PI/180.0f) <= 0.5*groundDrag*t)
+			if(flag){	
+				posx = posx + vel*t - 0.5*groundDrag*t*t;
+				vel = vel - groundDrag*t;
+				center[0] = initX + posx + (0.17/3);
+				//cout << "Vel: " << vel << endl;
+			}
+			if(vel <= 0 || center[0] > 3.25 || center[0] < -3.75)
 				flag = false;
+			//cout << "centerx: " << center[0] << endl;
 		}
 		else if(isMoving){
 			float oldx,oldy;
@@ -607,47 +609,40 @@ class Bird{
 		if(center[0] > 3.75){
 			initX = initX + posx;
 			initY = initY + posy;
-			absy = center[1];
-			store = absy + 3.75;
 			t=0;
-			absx = 8;
-			//cout << "check: " << initX << " " << initY << endl;
-
-			//cout << "old: " << vel << " " << theta << endl;
 			theta_old = theta;
 			vel_old = vel;
 			vel_new = sqrt(((alpha*vel_old*cos(theta_old*M_PI/180.0f))*(alpha*vel_old*cos(theta_old*M_PI/180.0f)))+(vel_old*sin(theta_old*M_PI/180.0f)*(vel_old*sin(theta_old*M_PI/180.0f))));
 			theta_new = 180 - atan(sin(theta_old*M_PI/180.0f)/(alpha*cos(theta*M_PI/180.0f)));
 			vel = vel_new;
 			theta = theta_new;
-			//cout << "new: " << vel << " " << theta << endl;
 		}
 		else if(center[0] < -3.75){
 			initX = initX + posx;
 			initY = initY + posy;
 			t=0;
-			absy = center[1];
-			//center[1] = 0;
-			absx = store + absy;
-			//cout << "check: " << initX << " " << initY << endl;
-			//cout << "absx: " << absx << endl;
-			//cout << "old: " << vel << " " << theta << endl;
 			theta_old = theta;
 			vel_old = vel;
 			vel_new = sqrt(((alpha*vel_old*cos(theta_old*M_PI/180.0f))*(alpha*vel_old*cos(theta_old*M_PI/180.0f)))+(vel_old*sin(theta_old*M_PI/180.0f)*(vel_old*sin(theta_old*M_PI/180.0f))));
 			theta_new = atan(sin(theta_old*M_PI/180.0f)/(alpha*cos(theta*M_PI/180.0f)));
 			vel = vel_new;
 			theta = theta_new;
-			//cout << "new: " << vel << " " << theta << endl;
 
 		}
 
 	}
 
 	void checkFloor(){
+		float theta_old,vel_old,vel_new,theta_new,alpha=0.8;
 		if(center[1] <= -3.5&&!floor){
-			//cout << "hit" << endl;
+			theta_old = theta;
+			vel_old = vel;
+			vel_new = sqrt(((alpha*vel_old*cos(theta_old*M_PI/180.0f))*(alpha*vel_old*cos(theta_old*M_PI/180.0f)))+(vel_old*sin(theta_old*M_PI/180.0f)*(vel_old*sin(theta_old*M_PI/180.0f))));
+			theta_new = atan(sin(theta_old*M_PI/180.0f)/(alpha*cos(theta*M_PI/180.0f)));
+			vel = vel_new;	
+			theta = theta_new;
 			t = 0;
+			vel = vel*cos(theta*M_PI/180.0f);
 			floor = true;	
 		}
 	}
@@ -954,8 +949,10 @@ int main (int argc, char** argv)
 		border[2].draw(1);
 		border[3].draw(3);
 		//path.draw();
+		if(!angryBird.floor){
 		for(i=1;i<20;i++){
 			path[i].draw(i);
+		}
 		}
 		if(!target.getCollided()&&!angryBird.checkCollision()){
 			target.draw();
