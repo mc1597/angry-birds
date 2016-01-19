@@ -1,5 +1,6 @@
 #include<iostream>
 #include <cmath>
+#include <cstdlib>
 #include <fstream>
 #include <vector>
 #include <glad/glad.h>
@@ -376,8 +377,8 @@ class Target{
 		int numVertices = 360;
 		GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
 		for (int i=0; i<numVertices; i++) {
-			vertex_buffer_data [3*i] = 0.25*cos(i*M_PI/180.0f);
-			vertex_buffer_data [3*i + 1] = 0.25*sin(i*M_PI/180.0f);
+			vertex_buffer_data [3*i] = radius*cos(i*M_PI/180.0f);
+			vertex_buffer_data [3*i + 1] = radius*sin(i*M_PI/180.0f);
 			vertex_buffer_data [3*i + 2] = 0;
 		}
 
@@ -410,10 +411,6 @@ class Target{
 		Matrices.model = glm::mat4(1.0f);
 
 		glm::mat4 translateTar = glm::translate (glm::vec3(posx, posy, 0));
-		//center[0]+=posx;
-		//center[1]+=posy;
-		//cout << center[0] << " " << center[1] << endl;
-		//glm::mat4 translatePoint = glm::translate(glm::vec3((float)(-1.0f + posx),(float)(posy), 0.0f));
 		Matrices.model *= (translateTar);
 		MVP = VP * Matrices.model;
 		glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
@@ -422,17 +419,20 @@ class Target{
 	}
 
 };
-Target target;
+
+Target target[5];
+
 class Bird{
 	int lives;
+	int score;
 	float posx;
 	float posy;
 	float vel;
 	float theta;
 	bool isMoving; 
-	float center[2];
 	float radius;
 	public:
+	float center[2];
 	float initX;
 	float initY;
 	float absy;
@@ -441,26 +441,35 @@ class Bird{
 	float newv;
 	bool floor;
 	bool flag;
+	int dir;
 	VAO *bird;
 	Bird(){
 		lives = 3;
+		score = 0;
 		isMoving = false;
 		vel = 1.2;
 		theta = 45;
 		posx = 0;
 		posy = 0;
-		center[0] = 0.05;
-		center[1] = 0; 
 		radius = 0.12;
 		initX = -3.5;
 		initY = 0;
+		center[0] = 0.05 + initX;
+		center[1] = 0 + initY; 
 		absy = 0;
 		absx = 4;
 		store = 0;
 		floor = false;
 		flag = true;
+		dir = 1;
 	}
 
+	float getLives(){
+		return lives;
+	}
+	float getScore(){
+		return score;
+	}
 	float getX(){
 		return posx;
 	}
@@ -487,6 +496,12 @@ class Bird{
 		isMoving = st;
 	}
 
+	void setLives(float l){
+		lives = l;
+	}
+	void setScore(float s){
+		score = s;
+	}
 	void setX(float x){
 		posx = x;
 	}
@@ -507,6 +522,21 @@ class Bird{
 		radius = r;
 	}
 
+	void reset(){
+		initX = -3.5;
+		initY = 0;
+		posx = 0;
+		posy = 0;
+		center[0] = 0.05 + initX; 
+		center[1] = 0 + initY;
+		theta = 45;
+		vel = 1.2;
+		lives--;
+		isMoving = !isMoving;
+		floor = false;
+		flag = true;
+		dir = 1;
+	}
 	void create(){
 		static const GLfloat vertex_buffer_data [] = {
 			0.17,0,0, // vertex 1
@@ -562,13 +592,15 @@ class Bird{
 		draw3DObject(bird);
 		if(floor){
 			if(flag){	
-				posx = posx + vel*t - 0.5*groundDrag*t*t;
 				vel = vel - groundDrag*t;
+				posx = posx + dir*(vel*t - 0.5*groundDrag*t*t);
 				center[0] = initX + posx + (0.17/3);
-				//cout << "Vel: " << vel << endl;
 			}
-			if(vel <= 0 || center[0] > 3.25 || center[0] < -3.75)
+			if(vel <= 0 || center[0] > 3.25 || center[0] < -3.75){
 				flag = false;
+				//floor = false;
+				reset();
+			}
 			//cout << "centerx: " << center[0] << endl;
 		}
 		else if(isMoving){
@@ -585,15 +617,17 @@ class Bird{
 		}
 	}
 
-	bool checkCollision(){
+	bool checkCollision(int index){
 		int cx,cy;
-		cx = target.getCenter()[0];
-		cy = target.getCenter()[1];
+		cx = target[index].getCenter()[0];
+		cy = target[index].getCenter()[1];
 		//cout << "1.  "<< target.getCollided() << endl;
-		if(sqrt(((center[0]-cx)*(center[0]-cx))+((center[1]-cy)*(center[1]-cy)))<=(radius + target.getRadius())){
-			target.setCollided(true);		
-			//smash = true;
-			//cout << "2.  "<< target.getCollided() << endl;
+		if(sqrt(pow((center[0]-cx),2)+pow((center[1]-cy),2))<=(radius + target[index].getRadius())){
+			target[index].setCollided(true);		
+			cout << "bird " << center[0] << " " << center[1] << endl;
+			cout << "ball" << cx << " " << cy << endl;
+			cout << sqrt(((center[0]-cx)*(center[0]-cx))+((center[1]-cy)*(center[1]-cy))) << " " << (radius + target[index].getRadius()) << endl;
+			cout << "Ball no: " << index << endl;
 			return true;
 		}
 		else{
@@ -614,6 +648,12 @@ class Bird{
 			theta_new = 180 - atan(sin(theta_old*M_PI/180.0f)/(alpha*cos(theta*M_PI/180.0f)));
 			vel = vel_new;
 			theta = theta_new;
+			if(theta < 90)
+				dir = 1;
+			else
+				dir = -1;
+			//cout << "theta: " << theta << endl;
+
 		}
 		else if(center[0] < -3.65){
 			initX = initX + posx;
@@ -625,7 +665,12 @@ class Bird{
 			theta_new = atan(sin(theta_old*M_PI/180.0f)/(alpha*cos(theta*M_PI/180.0f)));
 			vel = vel_new;
 			theta = theta_new;
+			if(theta < 90)
+				dir = 1;
+			else
+				dir = -1;
 
+			//cout << "theta: " << theta << endl;
 		}
 
 	}
@@ -635,12 +680,14 @@ class Bird{
 		if(center[1] <= -3.6&&!floor){
 			theta_old = theta;
 			vel_old = vel;
+			//cout << vel << endl;
 			vel_new = sqrt(((alpha*vel_old*cos(theta_old*M_PI/180.0f))*(alpha*vel_old*cos(theta_old*M_PI/180.0f)))+(vel_old*sin(theta_old*M_PI/180.0f)*(vel_old*sin(theta_old*M_PI/180.0f))));
 			theta_new = atan(sin(theta_old*M_PI/180.0f)/(alpha*cos(theta*M_PI/180.0f)));
 			vel = vel_new;	
 			theta = theta_new;
 			t = 0;
 			vel = vel*cos(theta*M_PI/180.0f);
+			//cout << vel << endl;
 			floor = true;	
 		}
 	}
@@ -764,6 +811,16 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 				break;
 			case GLFW_KEY_SPACE:
 				angryBird.setStatus(!angryBird.getStatus()); 
+				break;
+			case GLFW_KEY_UP:
+				if(angryBird.initY < 3.5)
+					angryBird.initY += 0.2; 
+				angryBird.center[1] = angryBird.initY;			
+				break;
+			case GLFW_KEY_DOWN:
+				if(angryBird.initY > -3.5)
+					angryBird.initY -= 0.2; 
+				angryBird.center[1] = angryBird.initY;			
 				break;
 			default:
 				break;
@@ -890,7 +947,7 @@ GLFWwindow* initGLFW (int width, int height)
 /* Add all the models to be created here */
 void initGL (GLFWwindow* window, int width, int height)
 {
-	int i =0;
+	int i =0,j=0;
 	/* Objects should be created before any other gl function and shaders */
 	// Create the models
 	//createTriangle (); // Generate the VAO, VBOs, vertices data & copy into the array buffer
@@ -903,7 +960,20 @@ void initGL (GLFWwindow* window, int width, int height)
 	for(i=1;i<20;i++){
 		path[i].create();
 	}
-	target.create();
+	for(j=0;j<5;j++){
+		
+		target[j].setX((float)((float)(rand()%7) + (-3.2f)));
+		target[j].setY((float)((float)(rand()%7) + (-3.2f)));
+		target[j].setCenter(target[j].getX(),target[j].getY());
+		target[j].setRadius((float)((float)(rand()%50)/100));
+		
+		cout << "Ball no: " <<  j  << " " << target[j].getX() << " " << target[j].getY() << " " << target[j].getRadius() << endl;
+		/*target[j].setX((float)((j*0.8+0.2)*0.6));
+		target[j].setY((float)((j*0.8+0.3)*0.4));
+		target[j].setCenter(target[j].getX(),target[j].getY());
+		target[j].setRadius(0.25*(5-j)*0.2);*/
+		target[j].create();		
+		}
 	// Create and compile our GLSL program from the shaders
 	programID = LoadShaders( "Sample_GL.vert", "Sample_GL.frag" );
 	// Get a handle for our "MVP" uniform
@@ -919,10 +989,10 @@ void initGL (GLFWwindow* window, int width, int height)
 	glEnable (GL_DEPTH_TEST);
 	glDepthFunc (GL_LEQUAL);
 
-	cout << "VENDOR: " << glGetString(GL_VENDOR) << endl;
-	cout << "RENDERER: " << glGetString(GL_RENDERER) << endl;
-	cout << "VERSION: " << glGetString(GL_VERSION) << endl;
-	cout << "GLSL: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
+	//cout << "VENDOR: " << glGetString(GL_VENDOR) << endl;
+	//cout << "RENDERER: " << glGetString(GL_RENDERER) << endl;
+	//cout << "VERSION: " << glGetString(GL_VERSION) << endl;
+	//cout << "GLSL: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
 }
 
 int main (int argc, char** argv)
@@ -937,7 +1007,8 @@ int main (int argc, char** argv)
 	double last_update_time = glfwGetTime(), current_time;
 
 	/* Draw in loop */
-	target.draw();
+	for(i=0;i<5;i++)
+	target[i].draw();
 	while (!glfwWindowShouldClose(window)) {
 
 		// OpenGL Draw commands
@@ -948,18 +1019,26 @@ int main (int argc, char** argv)
 		border[3].draw(3);
 		//path.draw();
 		if(!angryBird.floor){
-			for(i=1;i<6;i++){
+			for(i=1;i<20;i++){
 				path[i].draw(i);
 			}
 		}
-		if(!target.getCollided()&&!angryBird.checkCollision()){
-			target.draw();
+
+		for(i=0;i<5;i++){
+		if(!target[i].getCollided()&&!angryBird.checkCollision(i)){
+			target[i].draw();
 		}
 		else{
 			;//cout << "collided!  " << endl;
 		}
+		}
 		angryBird.checkWall();
-		angryBird.checkFloor();
+		if(angryBird.getStatus())
+			angryBird.checkFloor();
+		if(angryBird.getLives() <= 0){
+			cout << "GAME OVER!" << endl;
+			quit(window);
+		}
 		//if(angryBird.checkCollision(target)){
 		//	delete target;
 		//}
