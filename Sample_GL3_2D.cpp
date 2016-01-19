@@ -304,7 +304,7 @@ class Border{
 		draw3DObject(bor[orient]);
 
 	}
-	
+
 
 };
 
@@ -327,9 +327,9 @@ class Target{
 		vel = 0;
 		theta = 0;
 		marks = 5;
-		center[0] = 2.25;
-		center[1] = 2.25;
-		radius = 0.35;
+		center[0] = 2;
+		center[1] = 2;
+		radius = 0.25;
 		collided = false;
 	}
 	float getX(){
@@ -372,28 +372,26 @@ class Target{
 
 	void create()
 	{
-		static const GLfloat vertex_buffer_data [] = {
-			0,0,0, // vertex 1
-			0.5,0,0, // vertex 2
-			0.5,0.5,0, // vertex 3
 
-			0.5,0.5,0, // vertex 3
-			0,0.5,0, // vertex 4
-			0,0,0, // vertex 1
-		};
+		int numVertices = 360;
+		GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
+		for (int i=0; i<numVertices; i++) {
+			vertex_buffer_data [3*i] = 0.25*cos(i*M_PI/180.0f);
+			vertex_buffer_data [3*i + 1] = 0.25*sin(i*M_PI/180.0f);
+			vertex_buffer_data [3*i + 2] = 0;
+		}
 
-		static const GLfloat color_buffer_data [] = {
-			0,1,0, // color 1
-			0,1,0, // color 2
-			0,1,0, // color 3
 
-			0,1,0, // color 3
-			0,1,0, // color 4
-			0,1,0, // color 1
-		};
+		GLfloat* color_buffer_data = new GLfloat [3*numVertices];
+		for (int i=0; i<numVertices; i++) {
+			color_buffer_data [3*i] = 0;
+			color_buffer_data [3*i + 1] = 1;
+			color_buffer_data [3*i + 2] = 0;
+		}
+
 
 		// create3DObject creates and returns a handle to a VAO that can be used later
-		tar = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
+		tar = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
 	}
 
 	void draw(){
@@ -560,7 +558,7 @@ class Bird{
 		Matrices.model *= (moveSquare);
 		MVP = VP * Matrices.model;
 		glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
-		
+
 		draw3DObject(bird);
 		if(floor){
 			if(flag){	
@@ -583,7 +581,7 @@ class Bird{
 			center[1] = initY + posy;
 			//cout << "posx: " << posx << " posy: " << posy << endl;
 			//cout << "centerx: " << center[0] << " centery: " << center[1] << " absy: "<< absy + center[1] << endl;
-		
+
 		}
 	}
 
@@ -606,7 +604,7 @@ class Bird{
 
 	void checkWall(){
 		float theta_old,vel_old,vel_new,theta_new,alpha=0.8;
-		if(center[0] > 3.75){
+		if(center[0] > 3.65){
 			initX = initX + posx;
 			initY = initY + posy;
 			t=0;
@@ -617,7 +615,7 @@ class Bird{
 			vel = vel_new;
 			theta = theta_new;
 		}
-		else if(center[0] < -3.75){
+		else if(center[0] < -3.65){
 			initX = initX + posx;
 			initY = initY + posy;
 			t=0;
@@ -634,7 +632,7 @@ class Bird{
 
 	void checkFloor(){
 		float theta_old,vel_old,vel_new,theta_new,alpha=0.8;
-		if(center[1] <= -3.5&&!floor){
+		if(center[1] <= -3.6&&!floor){
 			theta_old = theta;
 			vel_old = vel;
 			vel_new = sqrt(((alpha*vel_old*cos(theta_old*M_PI/180.0f))*(alpha*vel_old*cos(theta_old*M_PI/180.0f)))+(vel_old*sin(theta_old*M_PI/180.0f)*(vel_old*sin(theta_old*M_PI/180.0f))));
@@ -750,7 +748,7 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	// Function is called first on GLFW_PRESS.
 
-	if (action == GLFW_RELEASE) {
+	if (action == GLFW_RELEASE && !angryBird.getStatus()) {
 		switch (key) {
 			case GLFW_KEY_W:
 				angryBird.setVel(angryBird.getVel()+0.2); 
@@ -915,7 +913,7 @@ void initGL (GLFWwindow* window, int width, int height)
 	reshapeWindow (window, width, height);
 
 	// Background color of the scene
-	glClearColor (0.3f, 0.3f, 0.3f, 0.0f); // R, G, B, A
+	glClearColor (0.0f, 0.2f, 0.4f, 1.0f); // R, G, B, A
 	glClearDepth (1.0f);
 
 	glEnable (GL_DEPTH_TEST);
@@ -950,9 +948,9 @@ int main (int argc, char** argv)
 		border[3].draw(3);
 		//path.draw();
 		if(!angryBird.floor){
-		for(i=1;i<20;i++){
-			path[i].draw(i);
-		}
+			for(i=1;i<6;i++){
+				path[i].draw(i);
+			}
 		}
 		if(!target.getCollided()&&!angryBird.checkCollision()){
 			target.draw();
