@@ -420,7 +420,7 @@ class Target{
 
 };
 
-Target target[5];
+Target target[7];
 
 float obstacle_rotation = 0;
 class Obstacle{
@@ -724,10 +724,14 @@ class Bird{
 
 	bool checkCollision(int index){
 		int cx,cy;
+		float r;
 		cx = target[index].getCenter()[0];
 		cy = target[index].getCenter()[1];
+		r = target[index].getRadius();
 		if(sqrt(pow((center[0]-cx),2)+pow((center[1]-cy),2))<=(radius + target[index].getRadius())){
-			target[index].setCollided(true);		
+			target[index].setCollided(true);
+			setScore(getScore() + (int)((1/r)*10 + target[index].getX()*10));	
+			//cout << "Score: " << getScore() << endl;
 			return true;
 		}
 		else{
@@ -781,7 +785,7 @@ class Bird{
 			theta_new = -1*(atan(sin(theta_old*M_PI/180.0f)/(alpha*cos(theta*M_PI/180.0f))));
 			vel = vel_new;
 			theta = theta_new;
-			cout << "roof " << theta_old << " " << theta_new << endl;
+			//cout << "roof " << theta_old << " " << theta_new << endl;
 		}
 	}
 	void checkWall(){
@@ -1015,6 +1019,20 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
 	}
 }
 
+GLfloat fov=89.8f;
+void scroll(GLFWwindow* window,double x,double y){
+
+        if(fov<89)
+                fov=89;
+        if(fov>91)
+                fov=91;
+        if(fov>=89&&fov<=91)
+                fov+=y*0.1;
+        cout << fov << " " << y << endl;
+
+
+}
+
 
 /* Executed when window is resized to 'width' and 'height' */
 /* Modify the bounds of the screen here in glm::ortho or Field of View in glm::Perspective */
@@ -1025,21 +1043,22 @@ void reshapeWindow (GLFWwindow* window, int width, int height)
 	   is different from WindowSize */
 	glfwGetFramebufferSize(window, &fbwidth, &fbheight);
 
-	GLfloat fov = 90.0f;
+	//GLfloat fov = 90.0f;
 
 	// sets the viewport of openGL renderer
 	glViewport (0, 0, (GLsizei) fbwidth, (GLsizei) fbheight);
 
 	// set the projection matrix as perspective
-	/* glMatrixMode (GL_PROJECTION);
+	   /*glMatrixMode (GL_PROJECTION);
 	   glLoadIdentity ();
-	   gluPerspective (fov, (GLfloat) fbwidth / (GLfloat) fbheight, 0.1, 500.0); */
+	   gluPerspective (fov, (GLfloat) fbwidth / (GLfloat) fbheight, 0.1, 500.0); 
+	*/
 	// Store the projection matrix in a variable for future use
 	// Perspective projection for 3D views
-	// Matrices.projection = glm::perspective (fov, (GLfloat) fbwidth / (GLfloat) fbheight, 0.1f, 500.0f);
+	Matrices.projection = glm::perspective (fov, (GLfloat) fbwidth / (GLfloat) fbheight, 0.1f, 500.0f);
 
 	// Ortho projection for 2D views
-	Matrices.projection = glm::ortho(-4.0f, 4.0f, -4.0f, 4.0f, 0.1f, 500.0f);
+	//Matrices.projection = glm::ortho(-4.0f, 4.0f, -4.0f, 4.0f, 0.1f, 500.0f);
 }
 
 /* Initialise glfw window, I/O callbacks and the renderer to use */
@@ -1086,6 +1105,7 @@ GLFWwindow* initGLFW (int width, int height)
 
 	/* Register function to handle mouse click */
 	glfwSetMouseButtonCallback(window, mouseButton);  // mouse button clicks
+	glfwSetScrollCallback(window, scroll);
 
 	return window;
 }
@@ -1107,7 +1127,7 @@ void initGL (GLFWwindow* window, int width, int height)
 	for(i=1;i<20;i++){
 		path[i].create();
 	}
-	for(j=0;j<5;j++){
+	for(j=0;j<7;j++){
 
 		target[j].setX((float)((float)(rand()%7) + (-3.2f)));
 		target[j].setY((float)((float)(rand()%7) + (-3.2f)));
@@ -1156,13 +1176,13 @@ int main (int argc, char** argv)
 	double last_update_time = glfwGetTime(), current_time;
 
 	/* Draw in loop */
-	for(i=0;i<5;i++)
+	for(i=0;i<7;i++)
 		target[i].draw();
 	for(i=0;i<7;i++)
 		obstacle[i].draw();
 	while (!glfwWindowShouldClose(window)) {
-
 		// OpenGL Draw commands
+		reshapeWindow (window, width, height);
 		angryBird.draw();
 		border[0].draw(0);
 		border[1].draw(2);
@@ -1176,7 +1196,7 @@ int main (int argc, char** argv)
 		}
 
 		
-		for(i=0;i<5;i++){
+		for(i=0;i<7;i++){
 			if(!target[i].getCollided()&&!angryBird.checkCollision(i)){
 				target[i].draw();
 			}
@@ -1195,6 +1215,7 @@ int main (int argc, char** argv)
 		}
 		if(angryBird.getLives() <= 0){
 			cout << "GAME OVER!" << endl;
+			cout << "Score: " << angryBird.getScore() << endl;
 			quit(window);
 		}
 		//if(angryBird.checkCollision(target)){
