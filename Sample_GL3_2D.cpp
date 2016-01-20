@@ -65,7 +65,7 @@ GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path
 	int InfoLogLength;
 
 	// Compile Vertex Shader
-	printf("Compiling shader : %s\n", vertex_file_path);
+	//printf("Compiling shader : %s\n", vertex_file_path);
 	char const * VertexSourcePointer = VertexShaderCode.c_str();
 	glShaderSource(VertexShaderID, 1, &VertexSourcePointer , NULL);
 	glCompileShader(VertexShaderID);
@@ -78,7 +78,7 @@ GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path
 	fprintf(stdout, "%s\n", &VertexShaderErrorMessage[0]);
 
 	// Compile Fragment Shader
-	printf("Compiling shader : %s\n", fragment_file_path);
+	//printf("Compiling shader : %s\n", fragment_file_path);
 	char const * FragmentSourcePointer = FragmentShaderCode.c_str();
 	glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer , NULL);
 	glCompileShader(FragmentShaderID);
@@ -91,7 +91,7 @@ GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path
 	fprintf(stdout, "%s\n", &FragmentShaderErrorMessage[0]);
 
 	// Link the program
-	fprintf(stdout, "Linking program\n");
+	//fprintf(stdout, "Linking program\n");
 	GLuint ProgramID = glCreateProgram();
 	glAttachShader(ProgramID, VertexShaderID);
 	glAttachShader(ProgramID, FragmentShaderID);
@@ -199,7 +199,7 @@ void draw3DObject (struct VAO* vao)
 	glDrawArrays(vao->PrimitiveMode, 0, vao->NumVertices); // Starting from vertex 0; 3 vertices total -> 1 triangle
 }
 
-float gravity = 0.5,airDrag = 0.1,friction = 0.1,t=0,groundDrag = 0.5;
+float gravity = 0.5,airDrag = 0.01,friction = 0.1,t=0,groundDrag = 0.5;
 float camera_rotation_angle = 90;
 
 class Border{
@@ -409,7 +409,7 @@ class Target{
 		Matrices.model = glm::mat4(1.0f);
 
 		Matrices.model = glm::mat4(1.0f);
-
+		
 		glm::mat4 translateTar = glm::translate (glm::vec3(posx, posy, 0));
 		Matrices.model *= (translateTar);
 		MVP = VP * Matrices.model;
@@ -422,6 +422,115 @@ class Target{
 
 Target target[5];
 
+float obstacle_rotation = 0;
+class Obstacle{
+	float posx;
+	float posy;
+	float marks;
+	float center[2];
+	float radius;
+	bool collided;
+	public:
+	VAO *obs;
+	Obstacle(){
+		posx = 2;
+		posy = 2;
+		marks = 5;
+		center[0] = posx;
+		center[1] = posy;
+		radius = 0.25;
+		collided = false;
+	}
+	float getX(){
+		return posx;
+	}
+	float getY(){
+		return posy;
+	}
+	void setX(int x){
+		posx = x;
+	}
+	void setY(int y){
+		posy = y;
+	}
+	float getMarks(){
+		return marks;
+	}
+	float* getCenter(){
+		return center;
+	}
+	float getRadius(){
+		return radius;
+	}
+	bool getCollided(){
+		return collided;
+	}
+	void setCollided(bool col){
+		collided = col;
+	}
+	void setMarks(int m){
+		marks = m;
+	}
+	void setCenter(float cx,float cy){
+		center[0] = cx;
+		center[1] = cy;
+	}
+	void setRadius(float r){
+		radius = r;
+	}
+
+	void create()
+	{
+
+		int numVertices = 72;
+		GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
+		for (int i=0; i<numVertices; i++) {
+			vertex_buffer_data [3*i] = radius*cos((72*i)*M_PI/180.0f);
+			vertex_buffer_data [3*i + 1] = radius*sin((72*i)*M_PI/180.0f);
+			vertex_buffer_data [3*i + 2] = 0;
+		}
+
+
+		GLfloat* color_buffer_data = new GLfloat [3*numVertices];
+		for (int i=0; i<numVertices; i++) {
+			color_buffer_data [3*i] = 1;
+			color_buffer_data [3*i + 1] = 0;
+			color_buffer_data [3*i + 2] = 0;
+		}
+
+
+		// create3DObject creates and returns a handle to a VAO that can be used later
+		obs = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
+	}
+
+	void draw(){
+		glUseProgram (programID);
+
+		glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
+		glm::vec3 target (0, 0, 0);
+		glm::vec3 up (0, 1, 0);
+
+		Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
+
+		glm::mat4 VP = Matrices.projection * Matrices.view;
+		glm::mat4 MVP;  // MVP = Projection * View * Model
+		Matrices.model = glm::mat4(1.0f);
+
+		Matrices.model = glm::mat4(1.0f);
+
+		glm::mat4 translateObs = glm::translate (glm::vec3(posx, posy, 0));
+		glm::mat4 rotateObs = glm::rotate((float)(obstacle_rotation*M_PI/180.0f), glm::vec3(0,0,1));
+		Matrices.model *= (translateObs*rotateObs);
+		obstacle_rotation+=0.5;
+		MVP = VP * Matrices.model;
+		glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+		draw3DObject(obs);
+
+	}
+
+};
+
+Obstacle obstacle[7];
 class Bird{
 	int lives;
 	int score;
@@ -601,18 +710,14 @@ class Bird{
 				//floor = false;
 				reset();
 			}
-			//cout << "centerx: " << center[0] << endl;
 		}
 		else if(isMoving){
-			float oldx,oldy;
-			oldx = posx;
-			oldy = posy;
-			posx = vel*cos(theta*M_PI/180.0f)*t - (0.5*airDrag*cos(theta*M_PI/180.0f)*t*t);
+			float vel_old,theta_old,vel_new,theta_new;
+
+			posx = vel*cos(theta*M_PI/180.0f)*t - 0.5*airDrag*t*t;
 			posy = vel*sin(theta*M_PI/180.0f)*t - (0.5*(gravity+(airDrag*sin(theta*M_PI/180.0f)))*t*t);
 			center[0] = initX + posx + (0.17/3);
 			center[1] = initY + posy;
-			//cout << "posx: " << posx << " posy: " << posy << endl;
-			//cout << "centerx: " << center[0] << " centery: " << center[1] << " absy: "<< absy + center[1] << endl;
 
 		}
 	}
@@ -621,21 +726,64 @@ class Bird{
 		int cx,cy;
 		cx = target[index].getCenter()[0];
 		cy = target[index].getCenter()[1];
-		//cout << "1.  "<< target.getCollided() << endl;
 		if(sqrt(pow((center[0]-cx),2)+pow((center[1]-cy),2))<=(radius + target[index].getRadius())){
 			target[index].setCollided(true);		
-			cout << "bird " << center[0] << " " << center[1] << endl;
-			cout << "ball" << cx << " " << cy << endl;
-			cout << sqrt(((center[0]-cx)*(center[0]-cx))+((center[1]-cy)*(center[1]-cy))) << " " << (radius + target[index].getRadius()) << endl;
-			cout << "Ball no: " << index << endl;
 			return true;
 		}
 		else{
-			//	cout << "3.  "<< target.getCollided() << endl;
 			return false;	
 		}
 	}
+	void checkObstacle(int i){
+		int cx,cy;
+		float theta_old,vel_old,vel_new,theta_new,alpha=0.8;
+		cx = obstacle[i].getCenter()[0];
+		cy = obstacle[i].getCenter()[1];
+		if(sqrt(pow((center[0]-cx),2)+pow((center[1]-cy),2))<=(radius + obstacle[i].getRadius())){
+			if(!obstacle[i].getCollided()){
+				initX = initX + posx;
+				initY = initY + posy;
+				theta_old = theta;
+				vel_old = vel;
 
+				vel_new = sqrt(pow(alpha*vel_old*cos(theta_old*M_PI/180.0f),2)+pow(vel_old*sin(theta_old*M_PI/180.0f),2));
+
+				if(dir == 1 && t== 0){	
+					theta_new = 180 - atan(sin(theta_old*M_PI/180.0f)/(alpha*cos(theta*M_PI/180.0f)));
+					dir = -1;
+					obstacle[i].setCollided(true);
+				}
+				else if(dir == -1 && t== 0){
+					theta_new = atan(sin(theta_old*M_PI/180.0f)/(alpha*cos(theta*M_PI/180.0f)));
+					dir = 1;
+					obstacle[i].setCollided(true);
+				}		
+				t=0;
+				vel = vel_new;
+				theta = theta_new;
+			}
+
+		}
+		else
+			obstacle[i].setCollided(false);
+
+	}
+
+	void checkRoof(){
+		float theta_old,vel_old,vel_new,theta_new,alpha=0.8;
+		if(center[1] > 3.6){
+			initX = initX + posx;
+			initY = initY + posy;
+			t=0;
+			theta_old = theta;
+			vel_old = vel;
+			vel_new = sqrt(((alpha*vel_old*cos(theta_old*M_PI/180.0f))*(alpha*vel_old*cos(theta_old*M_PI/180.0f)))+(vel_old*sin(theta_old*M_PI/180.0f)*(vel_old*sin(theta_old*M_PI/180.0f))));
+			theta_new = -1*(atan(sin(theta_old*M_PI/180.0f)/(alpha*cos(theta*M_PI/180.0f))));
+			vel = vel_new;
+			theta = theta_new;
+			cout << "roof " << theta_old << " " << theta_new << endl;
+		}
+	}
 	void checkWall(){
 		float theta_old,vel_old,vel_new,theta_new,alpha=0.8;
 		if(center[0] > 3.65){
@@ -768,11 +916,10 @@ class Point{
 		Matrices.model = glm::mat4(1.0f);
 
 		time/=2;
-		//posx = angryBird.getVel()*cos(angryBird.getAngle()*M_PI/180.0f)*time;
-		//posy = angryBird.getVel()*sin(angryBird.getAngle()*M_PI/180.0f)*time - (0.5*gravity*time*time);
 
 		posx = angryBird.getVel()*cos(angryBird.getAngle()*M_PI/180.0f)*time - (0.5*airDrag*cos(angryBird.getAngle()*M_PI/180.0f)*time*time);
 		posy = angryBird.getVel()*sin(angryBird.getAngle()*M_PI/180.0f)*time - (0.5*(gravity+(airDrag*sin(angryBird.getAngle()*M_PI/180.0f)))*time*time);
+
 		//glm::mat4 translateInit = glm::translate (glm::vec3(0, 0, 0));     
 		initX = angryBird.initX;
 		initY = angryBird.initY;
@@ -961,19 +1108,21 @@ void initGL (GLFWwindow* window, int width, int height)
 		path[i].create();
 	}
 	for(j=0;j<5;j++){
-		
+
 		target[j].setX((float)((float)(rand()%7) + (-3.2f)));
 		target[j].setY((float)((float)(rand()%7) + (-3.2f)));
 		target[j].setCenter(target[j].getX(),target[j].getY());
-		target[j].setRadius((float)((float)(rand()%50)/100));
-		
-		cout << "Ball no: " <<  j  << " " << target[j].getX() << " " << target[j].getY() << " " << target[j].getRadius() << endl;
-		/*target[j].setX((float)((j*0.8+0.2)*0.6));
-		target[j].setY((float)((j*0.8+0.3)*0.4));
-		target[j].setCenter(target[j].getX(),target[j].getY());
-		target[j].setRadius(0.25*(5-j)*0.2);*/
+		target[j].setRadius((float)((float)((rand()%25)+15)/100));
 		target[j].create();		
-		}
+	}
+	for(j=0;j<7;j++){
+
+		obstacle[j].setX((float)((float)(rand()%7) + (-3.2f)));
+		obstacle[j].setY((float)((float)(rand()%7) + (-3.2f)));
+		obstacle[j].setCenter(obstacle[j].getX(),obstacle[j].getY());
+		obstacle[j].setRadius((float)((float)((rand()%25)+10)/100));
+		obstacle[j].create();		
+	}
 	// Create and compile our GLSL program from the shaders
 	programID = LoadShaders( "Sample_GL.vert", "Sample_GL.frag" );
 	// Get a handle for our "MVP" uniform
@@ -1008,7 +1157,9 @@ int main (int argc, char** argv)
 
 	/* Draw in loop */
 	for(i=0;i<5;i++)
-	target[i].draw();
+		target[i].draw();
+	for(i=0;i<7;i++)
+		obstacle[i].draw();
 	while (!glfwWindowShouldClose(window)) {
 
 		// OpenGL Draw commands
@@ -1024,17 +1175,24 @@ int main (int argc, char** argv)
 			}
 		}
 
+		
 		for(i=0;i<5;i++){
-		if(!target[i].getCollided()&&!angryBird.checkCollision(i)){
-			target[i].draw();
+			if(!target[i].getCollided()&&!angryBird.checkCollision(i)){
+				target[i].draw();
+			}
+			else{
+				;//cout << "collided!  " << endl;
+			}
 		}
-		else{
-			;//cout << "collided!  " << endl;
-		}
-		}
-		angryBird.checkWall();
-		if(angryBird.getStatus())
+		for(i=0;i<7;i++)
+			obstacle[i].draw();
+		if(angryBird.getStatus()){
+			angryBird.checkWall();
+			for(i=0;i<7;i++)
+				angryBird.checkObstacle(i);
 			angryBird.checkFloor();
+			angryBird.checkRoof();
+		}
 		if(angryBird.getLives() <= 0){
 			cout << "GAME OVER!" << endl;
 			quit(window);
