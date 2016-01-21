@@ -201,6 +201,9 @@ void draw3DObject (struct VAO* vao)
 
 float gravity = 0.5,airDrag = 0.01,friction = 0.1,t=0,groundDrag = 0.5;
 float camera_rotation_angle = 90;
+glm::vec3 cameraPos = glm::vec3(0.0f,0.0f,3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f,0.0f,-1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f,1.0f,0.0f);
 
 class Border{
 
@@ -271,14 +274,15 @@ class Border{
 	}
 
 	void draw(int orient){
-		glUseProgram (programID);
+		/*glUseProgram (programID);
 
 		glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
 		glm::vec3 target (0, 0, 0);
 		glm::vec3 up (0, 1, 0);
+		*/
+		//Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
 
-		Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
-
+		Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
 		glm::mat4 VP = Matrices.projection * Matrices.view;
 		glm::mat4 MVP;  // MVP = Projection * View * Model
 		Matrices.model = glm::mat4(1.0f);
@@ -311,6 +315,166 @@ class Border{
 
 Border border[4];
 
+int numVertices = 360;
+
+class Light{
+	
+	public:
+	VAO *li[90];
+	float posx;
+	float posy;
+	float radius;
+
+	Light(){
+		posx=0;
+		posy=0;
+		radius=0.05;
+	}
+
+	void create(int index)
+        {
+
+                int numVertices = 360;
+                GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
+                for (int i=0; i<numVertices; i++) {
+                        vertex_buffer_data [3*i] = radius*cos(i*M_PI/180.0f);
+                        vertex_buffer_data [3*i + 1] = radius*sin(i*M_PI/180.0f);
+                        vertex_buffer_data [3*i + 2] = 0;
+                }
+
+
+                GLfloat* color_buffer_data = new GLfloat [3*numVertices];
+                for (int i=0; i<numVertices; i++) {
+                        color_buffer_data [3*i] = 1;
+                        color_buffer_data [3*i + 1] = 1;
+                        color_buffer_data [3*i + 2] = 1;
+                }
+
+
+                // create3DObject creates and returns a handle to a VAO that can be used later
+                li[index] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
+        }
+	
+	void draw(int index){
+	 Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
+                glm::mat4 VP = Matrices.projection * Matrices.view;
+                glm::mat4 MVP;  // MVP = Projection * View * Model
+                Matrices.model = glm::mat4(1.0f);
+
+                Matrices.model = glm::mat4(1.0f);
+
+                glm::mat4 translateLt = glm::translate (glm::vec3(posx, posy, 0));
+                Matrices.model *= (translateLt);
+                MVP = VP * Matrices.model;
+                glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+                draw3DObject(li[index]);
+
+
+	}
+
+};
+
+Light light[30];
+
+class Star{
+	
+	public:
+	VAO *st[90];
+	float posx;
+	float posy;
+	float radius;
+	bool twinkle;
+
+	Star(){
+		posx=0;
+		posy=0;
+		radius=0.05;
+		twinkle=true;
+	}
+	void createone(int index)
+	{
+
+		 static const GLfloat vertex_buffer_data [] = {
+			-0.12,-0.18,0,
+			0,0.18,0,
+			0.12,-0.18,0,
+
+                };
+
+                static const GLfloat color_buffer_data [] = {
+                        1,1,0, // color 0
+                        1,1,0, // color 0
+                        1,1,0, // color 0
+
+                };
+                st[index] = create3DObject(GL_LINE_STRIP, 3, vertex_buffer_data, color_buffer_data, GL_LINE);
+	
+	}
+	void createtwo(int index)
+	{
+
+		 static const GLfloat vertex_buffer_data [] = {
+
+			-0.12,-0.18,0,
+			0.2,0.07,0,
+			-0.2,0.07,0, 
+
+                };
+
+                static const GLfloat color_buffer_data [] = {
+                        1,1,0, // color 0
+                        1,1,0, // color 0
+                        1,1,0, // color 0
+
+                };
+                st[index] = create3DObject(GL_LINE_STRIP, 3, vertex_buffer_data, color_buffer_data, GL_LINE);
+	
+	}
+	void createthree(int index)
+	{
+
+		 static const GLfloat vertex_buffer_data [] = {
+			0.12,-0.18,0,
+			-0.2,0.07,0, 
+			0.2,0.07,0, 
+                };
+
+                static const GLfloat color_buffer_data [] = {
+                        1,1,0, // color 0
+                        1,1,0, // color 0
+                        1,1,0, // color 0
+
+                };
+                st[index] = create3DObject(GL_LINE_STRIP, 3, vertex_buffer_data, color_buffer_data, GL_LINE);
+	
+	}
+
+	void draw(int index){
+		/*glUseProgram (programID);
+
+		glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
+		glm::vec3 target (0, 0, 0);
+		glm::vec3 up (0, 1, 0);
+		*/
+		//Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
+
+		Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
+		glm::mat4 VP = Matrices.projection * Matrices.view;
+		glm::mat4 MVP;  // MVP = Projection * View * Model
+		Matrices.model = glm::mat4(1.0f);
+
+		Matrices.model = glm::mat4(1.0f);
+		
+		glm::mat4 translateStar = glm::translate (glm::vec3(posx, posy, 0));
+		Matrices.model *= (translateStar);
+		MVP = VP * Matrices.model;
+		glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+		draw3DObject(st[index]);
+
+	}
+	
+};
+Star star[180];
 class Target{
 	float posx;
 	float posy;
@@ -396,14 +560,15 @@ class Target{
 	}
 
 	void draw(){
-		glUseProgram (programID);
+		/*glUseProgram (programID);
 
 		glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
 		glm::vec3 target (0, 0, 0);
 		glm::vec3 up (0, 1, 0);
+		*/
+		//Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
 
-		Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
-
+		Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
 		glm::mat4 VP = Matrices.projection * Matrices.view;
 		glm::mat4 MVP;  // MVP = Projection * View * Model
 		Matrices.model = glm::mat4(1.0f);
@@ -504,14 +669,15 @@ class Obstacle{
 	}
 
 	void draw(){
-		glUseProgram (programID);
+		/*glUseProgram (programID);
 
 		glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
 		glm::vec3 target (0, 0, 0);
 		glm::vec3 up (0, 1, 0);
+		*/
+		//Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
 
-		Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
-
+		Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
 		glm::mat4 VP = Matrices.projection * Matrices.view;
 		glm::mat4 MVP;  // MVP = Projection * View * Model
 		Matrices.model = glm::mat4(1.0f);
@@ -531,6 +697,9 @@ class Obstacle{
 };
 
 Obstacle obstacle[7];
+
+
+
 class Bird{
 	int lives;
 	int score;
@@ -674,13 +843,14 @@ class Bird{
 		glUseProgram (programID);
 
 		// Eye - Location of camera. Don't change unless you are sure!!
-		glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
-		glm::vec3 target (0, 0, 0);
-		glm::vec3 up (0, 1, 0);
+	//	glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
+	//	glm::vec3 target (0, 0, 0);
+	//	glm::vec3 up (0, 1, 0);
 
 		//  Don't change unless you are sure!!
-		Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
+	//	Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
 
+		Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
 		//  Don't change unless you are sure!!
 		glm::mat4 VP = Matrices.projection * Matrices.view;
 
@@ -887,13 +1057,14 @@ class Point{
 		};
 
 		static const GLfloat color_buffer_data [] = {
-			1,1,1, // color 1
-			1,1,1, // color 2
-			1,1,1, // color 3
+			1,1,1,
+			1,1,1,
+			1,1,1,
 
-			1,1,1, // color 3
-			1,1,1, // color 4
-			1,1,1, // color 1
+			1,1,1,
+			1,1,1,
+			1,1,1,
+		
 		};
 
 		// create3DObject creates and returns a handle to a VAO that can be used later
@@ -904,14 +1075,15 @@ class Point{
 		// clear the color and depth in the frame buffer
 		//glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glUseProgram (programID);
+		/*glUseProgram (programID);
 
 		glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
 		glm::vec3 target (0, 0, 0);
 		glm::vec3 up (0, 1, 0);
+	*/
+	//	Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
 
-		Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
-
+		Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
 		glm::mat4 VP = Matrices.projection * Matrices.view;
 		glm::mat4 MVP;	// MVP = Projection * View * Model
 		Matrices.model = glm::mat4(1.0f);
@@ -1002,12 +1174,19 @@ void keyboardChar (GLFWwindow* window, unsigned int key)
 }
 
 /* Executed when a mouse button is pressed/released */
+double slope;
+void mouse_callback(GLFWwindow* window,double x,double y){
+	double bird_x=38.0f,bird_y=300.0f;
+	slope = atan((y-bird_y)/(x-bird_x));
+	slope = (-1*slope*180.0/M_PI)+20;
+	//cout << "Slope: " << slope*180.0f/M_PI << endl;
+}
 void mouseButton (GLFWwindow* window, int button, int action, int mods)
 {
 	switch (button) {
 		case GLFW_MOUSE_BUTTON_LEFT:
 			if (action == GLFW_RELEASE)
-				//triangle_rot_dir *= -1;
+				angryBird.setAngle(slope);
 				break;
 		case GLFW_MOUSE_BUTTON_RIGHT:
 			if (action == GLFW_RELEASE) {
@@ -1020,6 +1199,9 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
 }
 
 GLfloat fov=89.8f;
+GLfloat deltaTime = 0.0f;
+GLfloat factor = 0.01f;
+
 void scroll(GLFWwindow* window,double x,double y){
 
         if(fov<89)
@@ -1027,9 +1209,14 @@ void scroll(GLFWwindow* window,double x,double y){
         if(fov>91)
                 fov=91;
         if(fov>=89&&fov<=91)
-                fov+=y*0.1;
-        cout << fov << " " << y << endl;
+                fov-=y*0.1;
+	GLfloat cameraSpeed = 3.0f * deltaTime;
+        if(x==-1)
+                cameraPos -= glm::normalize(glm::cross(cameraFront,cameraUp))*cameraSpeed*factor;
+        if(x==1)
+                cameraPos += glm::normalize(glm::cross(cameraFront,cameraUp))*cameraSpeed*factor;
 
+        //cout << fov << " " << y << endl;
 
 }
 
@@ -1106,6 +1293,7 @@ GLFWwindow* initGLFW (int width, int height)
 	/* Register function to handle mouse click */
 	glfwSetMouseButtonCallback(window, mouseButton);  // mouse button clicks
 	glfwSetScrollCallback(window, scroll);
+	glfwSetCursorPosCallback(window,mouse_callback);
 
 	return window;
 }
@@ -1119,6 +1307,8 @@ void initGL (GLFWwindow* window, int width, int height)
 	// Create the models
 	//createTriangle (); // Generate the VAO, VBOs, vertices data & copy into the array buffer
 	//createRectangle ();
+	
+
 	border[0].create(0);
 	border[1].create(2);
 	border[2].create(1);
@@ -1143,11 +1333,95 @@ void initGL (GLFWwindow* window, int width, int height)
 		obstacle[j].setRadius((float)((float)((rand()%25)+10)/100));
 		obstacle[j].create();		
 	}
+
+	/*
+	for(j=0;j<87;j++){
+		star[j].posx = (((j/3)-15)*0.25) + 0.25;
+		star[j].posy = 3.0 + pow(-1,(j/3)%2)*0.25;
+		star[j].twinkle=true;
+		if(j%3==0)
+			star[j].createone(j);
+		if(j%3==1)
+			star[j].createtwo(j);
+		if(j%3==2)
+			star[j].createthree(j);
+	}
+	*/
+	for(j=0;j<39;j++){
+		if(j<3){
+			star[j].posx = -3.0;
+			star[j].posy = 2.1;
+		}
+		else if(j<6){
+			star[j].posx = -1.0;
+			star[j].posy = 1.1;
+		}
+		else if(j<9){
+			star[j].posx = 1.0;
+			star[j].posy = 2.75;
+		}
+		else if(j<12){
+			star[j].posx = 2.0;
+			star[j].posy = 1.75;
+		}
+		else if(j<15){
+			star[j].posx = 3.0;
+			star[j].posy = 2.25;
+		}
+		else if(j<18){
+			star[j].posx = 1.0;
+			star[j].posy = -2.75;
+		}
+		else if(j<21){
+			star[j].posx = -2.8;
+			star[j].posy = -3.1;
+		}
+		else if(j<24){
+			star[j].posx = 1.4;
+			star[j].posy = 2.5;
+		}
+		else if(j<27){
+			star[j].posx = 3.05;
+			star[j].posy = -2.15;
+		}
+		else if(j<30){
+			star[j].posx = -1.5;
+			star[j].posy = -0.5;
+		}
+		else if(j<33){
+			star[j].posx = 3.25;
+			star[j].posy = -3.15;
+		}
+		else if(j<36){
+			star[j].posx = -1.05;
+			star[j].posy = 3.35;
+		}
+		else if(j<39){
+			star[j].posx = -0.75;
+			star[j].posy = -2.15;
+		}
+		star[j].twinkle=true;
+		if(j%3==0)
+			star[j].createone(j);
+		if(j%3==1)
+			star[j].createtwo(j);
+		if(j%3==2)
+			star[j].createthree(j);
+	}
+
+	for(j=0;j<29;j++){
+                //light[j].posx = (((j)-15)*0.25) + 0.25;
+                //light[j].posy = 3.0 + pow(-1,(j)%2)*0.25;
+		light[j].posx = ((float)((float)(rand()%7) + (-3.2f)));
+		light[j].posy = ((float)((float)(rand()%7) + (-3.2f)));
+                light[j].create(j);
+        }
+
 	// Create and compile our GLSL program from the shaders
 	programID = LoadShaders( "Sample_GL.vert", "Sample_GL.frag" );
 	// Get a handle for our "MVP" uniform
 	Matrices.MatrixID = glGetUniformLocation(programID, "MVP");
-
+	
 
 	reshapeWindow (window, width, height);
 
@@ -1168,18 +1442,23 @@ int main (int argc, char** argv)
 {
 	int width = 600;
 	int height = 600;
-	int i;
+	int i,j;
 	GLFWwindow* window = initGLFW(width, height);
 
 	initGL (window, width, height);
-
+	bool blink = true;
 	double last_update_time = glfwGetTime(), current_time;
+	double last_blink_time = glfwGetTime(), current_blink_time;
 
 	/* Draw in loop */
 	for(i=0;i<7;i++)
 		target[i].draw();
 	for(i=0;i<7;i++)
 		obstacle[i].draw();
+	for(i=0;i<39;i++)
+		star[i].draw(i);
+	for(i=0;i<29;i++)
+		light[i].draw(i);
 	while (!glfwWindowShouldClose(window)) {
 		// OpenGL Draw commands
 		reshapeWindow (window, width, height);
@@ -1190,12 +1469,16 @@ int main (int argc, char** argv)
 		border[3].draw(3);
 		//path.draw();
 		if(!angryBird.floor){
-			for(i=1;i<20;i++){
+			for(i=1;i<10;i++){
 				path[i].draw(i);
 			}
 		}
 
+		for(i=0;i<39;i++)
+			star[i].draw(i);
 		
+		for(i=0;i<29;i++)
+			light[i].draw(i);
 		for(i=0;i<7;i++){
 			if(!target[i].getCollided()&&!angryBird.checkCollision(i)){
 				target[i].draw();
@@ -1231,9 +1514,13 @@ int main (int argc, char** argv)
 		current_time = glfwGetTime(); // Time in seconds
 		if ((current_time - last_update_time) >= 0.025) { // atleast 0.5s elapsed since last frame
 			// do something every 0.5 seconds ..
+			deltaTime+=0.025;
+			//count++;
 			if(angryBird.getStatus())
 				t+=0.025;
 			last_update_time = current_time;
+			//if(((int)(100*deltaTime))%23)
+			//	blink=!blink;
 		}
 	}
 
