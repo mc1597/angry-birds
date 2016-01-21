@@ -276,10 +276,10 @@ class Border{
 	void draw(int orient){
 		/*glUseProgram (programID);
 
-		glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
-		glm::vec3 target (0, 0, 0);
-		glm::vec3 up (0, 1, 0);
-		*/
+		  glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
+		  glm::vec3 target (0, 0, 0);
+		  glm::vec3 up (0, 1, 0);
+		 */
 		//Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
 
 		Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
@@ -315,166 +315,413 @@ class Border{
 
 Border border[4];
 
-int numVertices = 360;
+class Heart{
 
-class Light{
-	
 	public:
-	VAO *li[90];
-	float posx;
-	float posy;
-	float radius;
+		VAO *hrt[9];
+		float posx;
+		float posy;
+		float radius;
 
-	Light(){
-		posx=0;
-		posy=0;
-		radius=0.05;
-	}
+		Heart(){
+			posx = 3.5;
+			posy = 3.45;	
+			radius = 0.062;
+		}
 
-	void create(int index)
-        {
+		void createTriangle(int index){
+			static const GLfloat vertex_buffer_data [] = {
+				0,-0.062,0,
+				-0.125,0.125,0,
+				0.125,0.125,0,	
+			};
 
-                int numVertices = 360;
-                GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
-                for (int i=0; i<numVertices; i++) {
-                        vertex_buffer_data [3*i] = radius*cos(i*M_PI/180.0f);
-                        vertex_buffer_data [3*i + 1] = radius*sin(i*M_PI/180.0f);
-                        vertex_buffer_data [3*i + 2] = 0;
-                }
+			static const GLfloat color_buffer_data [] = {
+				1,0,0, // color 0
+				1,0,0, // color 0
+				1,0,0, // color 0
 
-
-                GLfloat* color_buffer_data = new GLfloat [3*numVertices];
-                for (int i=0; i<numVertices; i++) {
-                        color_buffer_data [3*i] = 1;
-                        color_buffer_data [3*i + 1] = 1;
-                        color_buffer_data [3*i + 2] = 1;
-                }
+			};
+			hrt[index] = create3DObject(GL_TRIANGLES, 3, vertex_buffer_data, color_buffer_data, GL_FILL);
 
 
-                // create3DObject creates and returns a handle to a VAO that can be used later
-                li[index] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
-        }
-	
-	void draw(int index){
-	 Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
-                glm::mat4 VP = Matrices.projection * Matrices.view;
-                glm::mat4 MVP;  // MVP = Projection * View * Model
-                Matrices.model = glm::mat4(1.0f);
+		}
 
-                Matrices.model = glm::mat4(1.0f);
-
-                glm::mat4 translateLt = glm::translate (glm::vec3(posx, posy, 0));
-                Matrices.model *= (translateLt);
-                MVP = VP * Matrices.model;
-                glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
-                draw3DObject(li[index]);
+		void createLeft(int index){
+			 int numVertices = 190;
+                        GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
+                        for (int i=0; i<numVertices; i++) {
+                                vertex_buffer_data [3*i] = -0.062 + radius*cos(i*M_PI/180.0f);
+                                vertex_buffer_data [3*i + 1] = 0.125 + radius*sin(i*M_PI/180.0f);
+                                vertex_buffer_data [3*i + 2] = 0;
+                        }
 
 
-	}
+                        GLfloat* color_buffer_data = new GLfloat [3*numVertices];
+                        for (int i=0; i<numVertices; i++) {
+                                color_buffer_data [3*i] = 1;
+                                color_buffer_data [3*i + 1] = 0;
+                                color_buffer_data [3*i + 2] = 0;
+                        }
+
+
+                        // create3DObject creates and returns a handle to a VAO that can be used later
+                        hrt[index] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
+
+		}
+
+		void createRight(int index){
+			 int numVertices = 190;
+                        GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
+                        for (int i=0; i<numVertices; i++) {
+                                vertex_buffer_data [3*i] = 0.062 + radius*cos(i*M_PI/180.0f);
+                                vertex_buffer_data [3*i + 1] = 0.125 + radius*sin(i*M_PI/180.0f);
+                                vertex_buffer_data [3*i + 2] = 0;
+                        }
+
+
+                        GLfloat* color_buffer_data = new GLfloat [3*numVertices];
+                        for (int i=0; i<numVertices; i++) {
+                                color_buffer_data [3*i] = 1;
+                                color_buffer_data [3*i + 1] = 0;
+                                color_buffer_data [3*i + 2] = 0;
+                        }
+
+
+                        // create3DObject creates and returns a handle to a VAO that can be used later
+                        hrt[index] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
+
+		}
+
+		void draw(int index){
+			Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
+			glm::mat4 VP = Matrices.projection * Matrices.view;
+			glm::mat4 MVP;  // MVP = Projection * View * Model
+			Matrices.model = glm::mat4(1.0f);
+
+			Matrices.model = glm::mat4(1.0f);
+
+			glm::mat4 translateLt = glm::translate (glm::vec3(posx, posy, 0));
+			Matrices.model *= (translateLt);
+			MVP = VP * Matrices.model;
+			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+			draw3DObject(hrt[index]);
+
+
+		}
+		
+
+};
+
+Heart heart[3];
+class Light{
+
+	public:
+		VAO *li[90];
+		float posx;
+		float posy;
+		float radius;
+
+		Light(){
+			posx=0;
+			posy=0;
+			radius=0.05;
+		}
+
+		void create(int index)
+		{
+
+			int numVertices = 360;
+			GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
+			for (int i=0; i<numVertices; i++) {
+				vertex_buffer_data [3*i] = radius*cos(i*M_PI/180.0f);
+				vertex_buffer_data [3*i + 1] = radius*sin(i*M_PI/180.0f);
+				vertex_buffer_data [3*i + 2] = 0;
+			}
+
+
+			GLfloat* color_buffer_data = new GLfloat [3*numVertices];
+			for (int i=0; i<numVertices; i++) {
+				color_buffer_data [3*i] = 1;
+				color_buffer_data [3*i + 1] = 1;
+				color_buffer_data [3*i + 2] = 1;
+			}
+
+
+			// create3DObject creates and returns a handle to a VAO that can be used later
+			li[index] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
+		}
+
+		void draw(int index){
+			Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
+			glm::mat4 VP = Matrices.projection * Matrices.view;
+			glm::mat4 MVP;  // MVP = Projection * View * Model
+			Matrices.model = glm::mat4(1.0f);
+
+			Matrices.model = glm::mat4(1.0f);
+
+			glm::mat4 translateLt = glm::translate (glm::vec3(posx, posy, 0));
+			Matrices.model *= (translateLt);
+			MVP = VP * Matrices.model;
+			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+			draw3DObject(li[index]);
+
+
+		}
 
 };
 
 Light light[30];
 
 class Star{
-	
+
 	public:
-	VAO *st[90];
-	float posx;
-	float posy;
-	float radius;
-	bool twinkle;
+		VAO *st[90];
+		float posx;
+		float posy;
+		float radius;
+		bool twinkle;
 
-	Star(){
-		posx=0;
-		posy=0;
-		radius=0.05;
-		twinkle=true;
-	}
-	void createone(int index)
-	{
+		Star(){
+			posx=0;
+			posy=0;
+			radius=0.05;
+			twinkle=true;
+		}
+		void createone(int index)
+		{
 
-		 static const GLfloat vertex_buffer_data [] = {
-			-0.12,-0.18,0,
-			0,0.18,0,
-			0.12,-0.18,0,
+			static const GLfloat vertex_buffer_data [] = {
+				-0.12,-0.18,0,
+				0,0.18,0,
+				0.12,-0.18,0,
 
-                };
+			};
 
-                static const GLfloat color_buffer_data [] = {
-                        1,1,0, // color 0
-                        1,1,0, // color 0
-                        1,1,0, // color 0
+			static const GLfloat color_buffer_data [] = {
+				1,1,0, // color 0
+				1,1,0, // color 0
+				1,1,0, // color 0
 
-                };
-                st[index] = create3DObject(GL_LINE_STRIP, 3, vertex_buffer_data, color_buffer_data, GL_LINE);
-	
-	}
-	void createtwo(int index)
-	{
+			};
+			st[index] = create3DObject(GL_LINE_STRIP, 3, vertex_buffer_data, color_buffer_data, GL_LINE);
 
-		 static const GLfloat vertex_buffer_data [] = {
+		}
+		void createtwo(int index)
+		{
 
-			-0.12,-0.18,0,
-			0.2,0.07,0,
-			-0.2,0.07,0, 
+			static const GLfloat vertex_buffer_data [] = {
 
-                };
+				-0.12,-0.18,0,
+				0.2,0.07,0,
+				-0.2,0.07,0, 
 
-                static const GLfloat color_buffer_data [] = {
-                        1,1,0, // color 0
-                        1,1,0, // color 0
-                        1,1,0, // color 0
+			};
 
-                };
-                st[index] = create3DObject(GL_LINE_STRIP, 3, vertex_buffer_data, color_buffer_data, GL_LINE);
-	
-	}
-	void createthree(int index)
-	{
+			static const GLfloat color_buffer_data [] = {
+				1,1,0, // color 0
+				1,1,0, // color 0
+				1,1,0, // color 0
 
-		 static const GLfloat vertex_buffer_data [] = {
-			0.12,-0.18,0,
-			-0.2,0.07,0, 
-			0.2,0.07,0, 
-                };
+			};
+			st[index] = create3DObject(GL_LINE_STRIP, 3, vertex_buffer_data, color_buffer_data, GL_LINE);
 
-                static const GLfloat color_buffer_data [] = {
-                        1,1,0, // color 0
-                        1,1,0, // color 0
-                        1,1,0, // color 0
+		}
+		void createthree(int index)
+		{
 
-                };
-                st[index] = create3DObject(GL_LINE_STRIP, 3, vertex_buffer_data, color_buffer_data, GL_LINE);
-	
-	}
+			static const GLfloat vertex_buffer_data [] = {
+				0.12,-0.18,0,
+				-0.2,0.07,0, 
+				0.2,0.07,0, 
+			};
 
-	void draw(int index){
-		/*glUseProgram (programID);
+			static const GLfloat color_buffer_data [] = {
+				1,1,0, // color 0
+				1,1,0, // color 0
+				1,1,0, // color 0
 
-		glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
-		glm::vec3 target (0, 0, 0);
-		glm::vec3 up (0, 1, 0);
-		*/
-		//Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
+			};
+			st[index] = create3DObject(GL_LINE_STRIP, 3, vertex_buffer_data, color_buffer_data, GL_LINE);
 
-		Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
-		glm::mat4 VP = Matrices.projection * Matrices.view;
-		glm::mat4 MVP;  // MVP = Projection * View * Model
-		Matrices.model = glm::mat4(1.0f);
+		}
 
-		Matrices.model = glm::mat4(1.0f);
-		
-		glm::mat4 translateStar = glm::translate (glm::vec3(posx, posy, 0));
-		Matrices.model *= (translateStar);
-		MVP = VP * Matrices.model;
-		glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
-		draw3DObject(st[index]);
+		void draw(int index){
+			/*glUseProgram (programID);
 
-	}
-	
+			  glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
+			  glm::vec3 target (0, 0, 0);
+			  glm::vec3 up (0, 1, 0);
+			 */
+			//Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
+
+			Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
+			glm::mat4 VP = Matrices.projection * Matrices.view;
+			glm::mat4 MVP;  // MVP = Projection * View * Model
+			Matrices.model = glm::mat4(1.0f);
+
+			Matrices.model = glm::mat4(1.0f);
+
+			glm::mat4 translateStar = glm::translate (glm::vec3(posx, posy, 0));
+			Matrices.model *= (translateStar);
+			MVP = VP * Matrices.model;
+			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+			draw3DObject(st[index]);
+
+		}
+
 };
 Star star[180];
+
+class Varys{
+
+	public:
+		VAO *var[2];
+		float posx;
+		float posy;
+		float center[2];
+		float radius;
+		bool collided;
+		int dir;
+		int up;
+		int count;
+		Varys(){
+
+			count=0;
+			posx=0;
+			posy=-3.5;
+			radius = 0.1;
+			center[0] = posx;
+			center[1] = posy;
+			dir = 1;
+			up = 1;
+		}
+
+
+
+		void createBody(){
+			int numVertices = 360;
+			GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
+			for (int i=0; i<numVertices; i++) {
+				vertex_buffer_data [3*i] = radius*cos(i*M_PI/180.0f);
+				vertex_buffer_data [3*i + 1] = radius*sin(i*M_PI/180.0f);
+				vertex_buffer_data [3*i + 2] = 0;
+			}
+
+
+			GLfloat* color_buffer_data = new GLfloat [3*numVertices];
+			for (int i=0; i<numVertices; i++) {
+				color_buffer_data [3*i] = 0;
+				color_buffer_data [3*i + 1] = 0;
+				color_buffer_data [3*i + 2] = 0;
+			}
+
+
+			// create3DObject creates and returns a handle to a VAO that can be used later
+			var[0] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
+
+		}
+		void createLegs(){
+			static const GLfloat vertex_buffer_data [] = {
+				0.1,0,0,
+				0.2,0.05,0,
+
+				0.2,0.05,0,
+				0.25,0,0,
+
+				0.05,0.086,0,
+				0.1,0.1732,0,
+
+				0.1,0.1732,0,
+				0.15,0.043,0,
+
+				-0.07,0.086,0,
+				-0.11,0.1732,0,
+
+				-0.1,0.1732,0,
+				-0.15,0.043,0,
+
+				-0.1,0,0,
+				-0.2,0.05,0,
+
+				-0.2,0.05,0,
+				-0.25,0,0,
+
+				-0.07,-0.086,0,
+				-0.11,-0.1732,0,
+
+				0.05,-0.086,0,
+				0.1,-0.1732,0,
+			};
+
+			static const GLfloat color_buffer_data [] = {
+				0,0,0, // color 0
+				0,0,0, // color 0
+
+				0,0,0, // color 0
+				0,0,0, // color 0
+
+				0,0,0, // color 0
+				0,0,0, // color 0
+
+				0,0,0, // color 0
+				0,0,0, // color 0
+
+				0,0,0, // color 0
+				0,0,0, // color 0
+
+				0,0,0, // color 0
+				0,0,0, // color 0
+
+				0,0,0, // color 0
+				0,0,0, // color 0
+
+				0,0,0, // color 0
+				0,0,0, // color 0
+
+				0,0,0, // color 0
+				0,0,0, // color 0
+
+				0,0,0, // color 0
+				0,0,0, // color 0
+			};
+			var[1] = create3DObject(GL_LINES, 20, vertex_buffer_data, color_buffer_data, GL_LINE);
+
+		}
+
+		void draw(int index){
+			Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
+			glm::mat4 VP = Matrices.projection * Matrices.view;
+			glm::mat4 MVP;  // MVP = Projection * View * Model
+			Matrices.model = glm::mat4(1.0f);
+
+			Matrices.model = glm::mat4(1.0f);
+
+			glm::mat4 translateVarys = glm::translate (glm::vec3(posx, posy, 0));
+			Matrices.model *= (translateVarys);
+			MVP = VP * Matrices.model;
+			posx += 0.02*dir;
+			posy += 0.02*up;
+			center[0]=posx;
+			center[1]=posy;
+			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+			draw3DObject(var[index]);
+
+		}
+
+		void turn(){
+			count++;
+			if(count%25==0){
+				dir=-1*dir;
+			}
+			if(center[1] > 3.5)
+				up = -1;
+			if(center[1] < -3.5)
+				up = 1;
+		}	
+};
+Varys varys[2];
+
 class Target{
 	float posx;
 	float posy;
@@ -562,10 +809,10 @@ class Target{
 	void draw(){
 		/*glUseProgram (programID);
 
-		glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
-		glm::vec3 target (0, 0, 0);
-		glm::vec3 up (0, 1, 0);
-		*/
+		  glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
+		  glm::vec3 target (0, 0, 0);
+		  glm::vec3 up (0, 1, 0);
+		 */
 		//Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
 
 		Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
@@ -574,7 +821,7 @@ class Target{
 		Matrices.model = glm::mat4(1.0f);
 
 		Matrices.model = glm::mat4(1.0f);
-		
+
 		glm::mat4 translateTar = glm::translate (glm::vec3(posx, posy, 0));
 		Matrices.model *= (translateTar);
 		MVP = VP * Matrices.model;
@@ -671,10 +918,10 @@ class Obstacle{
 	void draw(){
 		/*glUseProgram (programID);
 
-		glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
-		glm::vec3 target (0, 0, 0);
-		glm::vec3 up (0, 1, 0);
-		*/
+		  glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
+		  glm::vec3 target (0, 0, 0);
+		  glm::vec3 up (0, 1, 0);
+		 */
 		//Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
 
 		Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
@@ -843,12 +1090,12 @@ class Bird{
 		glUseProgram (programID);
 
 		// Eye - Location of camera. Don't change unless you are sure!!
-	//	glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
-	//	glm::vec3 target (0, 0, 0);
-	//	glm::vec3 up (0, 1, 0);
+		//	glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
+		//	glm::vec3 target (0, 0, 0);
+		//	glm::vec3 up (0, 1, 0);
 
 		//  Don't change unless you are sure!!
-	//	Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
+		//	Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
 
 		Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
 		//  Don't change unless you are sure!!
@@ -900,13 +1147,26 @@ class Bird{
 		r = target[index].getRadius();
 		if(sqrt(pow((center[0]-cx),2)+pow((center[1]-cy),2))<=(radius + target[index].getRadius())){
 			target[index].setCollided(true);
-			setScore(getScore() + (int)((1/r)*10 + target[index].getX()*10));	
+			setScore(getScore() + (int)((1/r)*10 + abs(target[index].getX()*8)));	
 			//cout << "Score: " << getScore() << endl;
 			return true;
 		}
 		else{
 			return false;	
 		}
+	}
+
+	void checkVarys(){
+		int cx,cy;
+		float r;
+		cx = varys[0].center[0];
+		cy = varys[0].center[1];
+		if(sqrt(pow((center[0]-cx),2)+pow((center[1]-cy),2))<=(radius + 0.2)){
+			setScore(getScore() - 10);	
+			reset();
+
+		}
+
 	}
 	void checkObstacle(int i){
 		int cx,cy;
@@ -1057,14 +1317,12 @@ class Point{
 		};
 
 		static const GLfloat color_buffer_data [] = {
-			1,1,1,
-			1,1,1,
-			1,1,1,
-
-			1,1,1,
-			1,1,1,
-			1,1,1,
-		
+			1.0,0.325,0.28,	
+			1.0,0.325,0.28,	
+			1.0,0.325,0.28,	
+			1.0,0.325,0.28,	
+			1.0,0.325,0.28,	
+			1.0,0.325,0.28,	
 		};
 
 		// create3DObject creates and returns a handle to a VAO that can be used later
@@ -1077,11 +1335,11 @@ class Point{
 
 		/*glUseProgram (programID);
 
-		glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
-		glm::vec3 target (0, 0, 0);
-		glm::vec3 up (0, 1, 0);
-	*/
-	//	Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
+		  glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
+		  glm::vec3 target (0, 0, 0);
+		  glm::vec3 up (0, 1, 0);
+		 */
+		//	Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
 
 		Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
 		glm::mat4 VP = Matrices.projection * Matrices.view;
@@ -1187,7 +1445,7 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
 		case GLFW_MOUSE_BUTTON_LEFT:
 			if (action == GLFW_RELEASE)
 				angryBird.setAngle(slope);
-				break;
+			break;
 		case GLFW_MOUSE_BUTTON_RIGHT:
 			if (action == GLFW_RELEASE) {
 				//rectangle_rot_dir *= -1;
@@ -1204,19 +1462,19 @@ GLfloat factor = 0.01f;
 
 void scroll(GLFWwindow* window,double x,double y){
 
-        if(fov<89)
-                fov=89;
-        if(fov>91)
-                fov=91;
-        if(fov>=89&&fov<=91)
-                fov-=y*0.1;
+	if(fov<89)
+		fov=89;
+	if(fov>91)
+		fov=91;
+	if(fov>=89&&fov<=91)
+		fov-=y*0.1;
 	GLfloat cameraSpeed = 3.0f * deltaTime;
-        if(x==-1)
-                cameraPos -= glm::normalize(glm::cross(cameraFront,cameraUp))*cameraSpeed*factor;
-        if(x==1)
-                cameraPos += glm::normalize(glm::cross(cameraFront,cameraUp))*cameraSpeed*factor;
+	if(x==-1)
+		cameraPos -= glm::normalize(glm::cross(cameraFront,cameraUp))*cameraSpeed*factor;
+	if(x==1)
+		cameraPos += glm::normalize(glm::cross(cameraFront,cameraUp))*cameraSpeed*factor;
 
-        //cout << fov << " " << y << endl;
+	//cout << fov << " " << y << endl;
 
 }
 
@@ -1236,10 +1494,10 @@ void reshapeWindow (GLFWwindow* window, int width, int height)
 	glViewport (0, 0, (GLsizei) fbwidth, (GLsizei) fbheight);
 
 	// set the projection matrix as perspective
-	   /*glMatrixMode (GL_PROJECTION);
-	   glLoadIdentity ();
-	   gluPerspective (fov, (GLfloat) fbwidth / (GLfloat) fbheight, 0.1, 500.0); 
-	*/
+	/*glMatrixMode (GL_PROJECTION);
+	  glLoadIdentity ();
+	  gluPerspective (fov, (GLfloat) fbwidth / (GLfloat) fbheight, 0.1, 500.0); 
+	 */
 	// Store the projection matrix in a variable for future use
 	// Perspective projection for 3D views
 	Matrices.projection = glm::perspective (fov, (GLfloat) fbwidth / (GLfloat) fbheight, 0.1f, 500.0f);
@@ -1307,7 +1565,7 @@ void initGL (GLFWwindow* window, int width, int height)
 	// Create the models
 	//createTriangle (); // Generate the VAO, VBOs, vertices data & copy into the array buffer
 	//createRectangle ();
-	
+
 
 	border[0].create(0);
 	border[1].create(2);
@@ -1335,22 +1593,22 @@ void initGL (GLFWwindow* window, int width, int height)
 	}
 
 	/*
-	for(j=0;j<87;j++){
-		star[j].posx = (((j/3)-15)*0.25) + 0.25;
-		star[j].posy = 3.0 + pow(-1,(j/3)%2)*0.25;
-		star[j].twinkle=true;
-		if(j%3==0)
-			star[j].createone(j);
-		if(j%3==1)
-			star[j].createtwo(j);
-		if(j%3==2)
-			star[j].createthree(j);
-	}
-	*/
+	   for(j=0;j<87;j++){
+	   star[j].posx = (((j/3)-15)*0.25) + 0.25;
+	   star[j].posy = 3.0 + pow(-1,(j/3)%2)*0.25;
+	   star[j].twinkle=true;
+	   if(j%3==0)
+	   star[j].createone(j);
+	   if(j%3==1)
+	   star[j].createtwo(j);
+	   if(j%3==2)
+	   star[j].createthree(j);
+	   }
+	 */
 	for(j=0;j<39;j++){
 		if(j<3){
 			star[j].posx = -3.0;
-			star[j].posy = 2.1;
+			star[j].posy = 2.6;
 		}
 		else if(j<6){
 			star[j].posx = -1.0;
@@ -1410,18 +1668,31 @@ void initGL (GLFWwindow* window, int width, int height)
 	}
 
 	for(j=0;j<29;j++){
-                //light[j].posx = (((j)-15)*0.25) + 0.25;
-                //light[j].posy = 3.0 + pow(-1,(j)%2)*0.25;
+		//light[j].posx = (((j)-15)*0.25) + 0.25;
+		//light[j].posy = 3.0 + pow(-1,(j)%2)*0.25;
 		light[j].posx = ((float)((float)(rand()%7) + (-3.2f)));
 		light[j].posy = ((float)((float)(rand()%7) + (-3.2f)));
-                light[j].create(j);
-        }
+		light[j].create(j);
+	}
+	varys[0].createBody();
+	varys[1].createLegs();
 
+	heart[2].posx = 2.90;
+	heart[2].posy = 3.45;
+	heart[1].posx = 3.20;
+	heart[1].posy = 3.45;
+	heart[0].posx = 3.5;
+	heart[0].posy = 3.45;
+	for(i=0;i<3;i++){
+	heart[i].createTriangle(i);
+	heart[i].createLeft(i+1);
+	heart[i].createRight(i+2);
+	}
 	// Create and compile our GLSL program from the shaders
 	programID = LoadShaders( "Sample_GL.vert", "Sample_GL.frag" );
 	// Get a handle for our "MVP" uniform
 	Matrices.MatrixID = glGetUniformLocation(programID, "MVP");
-	
+
 
 	reshapeWindow (window, width, height);
 
@@ -1457,8 +1728,10 @@ int main (int argc, char** argv)
 		obstacle[i].draw();
 	for(i=0;i<39;i++)
 		star[i].draw(i);
-	for(i=0;i<29;i++)
-		light[i].draw(i);
+	varys[0].draw(0);
+	varys[1].draw(1);
+	//for(i=0;i<29;i++)
+	//	light[i].draw(i);
 	while (!glfwWindowShouldClose(window)) {
 		// OpenGL Draw commands
 		reshapeWindow (window, width, height);
@@ -1476,9 +1749,9 @@ int main (int argc, char** argv)
 
 		for(i=0;i<39;i++)
 			star[i].draw(i);
-		
-		for(i=0;i<29;i++)
-			light[i].draw(i);
+
+		//	for(i=0;i<29;i++)
+		//		light[i].draw(i);
 		for(i=0;i<7;i++){
 			if(!target[i].getCollided()&&!angryBird.checkCollision(i)){
 				target[i].draw();
@@ -1489,11 +1762,22 @@ int main (int argc, char** argv)
 		}
 		for(i=0;i<7;i++)
 			obstacle[i].draw();
+		varys[0].turn();	
+		varys[1].turn();	
+		varys[0].draw(0);
+		varys[1].draw(1);
+
+		for(i=0;i<angryBird.getLives();i++){
+		heart[i].draw(i);
+		heart[i].draw(i+1);
+		heart[i].draw(i+2);
+		}
 		if(angryBird.getStatus()){
 			angryBird.checkWall();
 			for(i=0;i<7;i++)
 				angryBird.checkObstacle(i);
 			angryBird.checkFloor();
+			angryBird.checkVarys();
 			angryBird.checkRoof();
 		}
 		if(angryBird.getLives() <= 0){
