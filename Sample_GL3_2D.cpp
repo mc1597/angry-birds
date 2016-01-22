@@ -1003,7 +1003,9 @@ class Target{
 	float radius;
 	bool collided;
 	public:
+	int dir;
 	VAO *tar,*eye[2],*pupil[2],*mouth,*tooth;
+	int count;
 	Target(){
 		posx = 2;
 		posy = 2;
@@ -1014,6 +1016,8 @@ class Target{
 		center[1] = 2;
 		radius = 0.25;
 		collided = false;
+		count = 0;
+		dir=1;
 	}
 	float getX(){
 		return posx;
@@ -1190,9 +1194,13 @@ class Target{
 		Matrices.model = glm::mat4(1.0f);
 
 		glm::mat4 translateTar = glm::translate (glm::vec3(posx, posy, 0));
+		posy+=0.0005*dir;
+		center[1] = posy;	
 		glm::mat4 rotateTar = glm::rotate((float)(angle*M_PI/180.0f), glm::vec3(0,0,1));
 		Matrices.model *= (translateTar * rotateTar);
-
+		count++;
+		if(count%150==0)
+			dir=-1*dir;
 		MVP = VP * Matrices.model;
 		glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 		if(i==0)
@@ -2108,6 +2116,7 @@ void initGL (GLFWwindow* window, int width, int height)
 		target[j].createPupil(0,(target[j].getRadius()/2),target[j].getRadius()/8);
 		target[j].createPupil(1,-1*(target[j].getRadius()/2),target[j].getRadius()/8);
 		target[j].createMouth(0,(target[j].getRadius()/3));
+		target[j].dir=pow(-1,j%2);
 		//target[j].createTooth(0,(target[j].getRadius()/3));
 	}
 	for(j=0;j<7;j++){
