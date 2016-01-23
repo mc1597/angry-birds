@@ -744,12 +744,14 @@ class Star{
 		float posy;
 		float radius;
 		int twinkle;
+		bool pause;
 
 		Star(){
 			posx=0;
 			posy=0;
 			radius=0.05;
 			twinkle=1;
+			pause=false;
 		}
 		void createone(int index)
 		{
@@ -848,6 +850,7 @@ class Varys{
 		int dir;
 		int up;
 		int count;
+		bool pause;
 		Varys(){
 
 			count=0;
@@ -858,6 +861,7 @@ class Varys{
 			center[1] = posy;
 			dir = 1;
 			up = 1;
+			pause=false;
 		}
 
 
@@ -975,8 +979,10 @@ class Varys{
 			glm::mat4 translateVarys = glm::translate (glm::vec3(posx, posy, 0));
 			Matrices.model *= (translateVarys);
 			MVP = VP * Matrices.model;
-			posx += 0.02*dir;
-			posy += 0.02*up;
+			if(!pause){
+				posx += 0.02*dir;
+				posy += 0.02*up;
+			}
 			center[0]=posx;
 			center[1]=posy;
 			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
@@ -1011,6 +1017,7 @@ class Target{
 	float scaleFactor;
 	bool shrink;
 	VAO *tar,*eye[2],*pupil[2],*mouth,*tooth;
+	bool pause;
 	int count;
 	Target(){
 		posx = 2;
@@ -1026,6 +1033,7 @@ class Target{
 		dir=1;
 		scaleFactor=1;
 		shrink=false;
+		pause=false;
 	}
 	float getX(){
 		return posx;
@@ -1195,18 +1203,19 @@ class Target{
 		Matrices.model = glm::mat4(1.0f);
 
 		glm::mat4 translateTar = glm::translate (glm::vec3(posx, posy, 0));
-		posy+=0.0005*dir;
-		center[1] = posy;	
 		glm::mat4 rotateTar = glm::rotate((float)(angle*M_PI/180.0f), glm::vec3(0,0,1));
 		glm::mat4 scaleTar = glm::scale (glm::vec3(scaleFactor, scaleFactor, 0));
 		Matrices.model *= (translateTar * rotateTar * scaleTar);
-		count++;
-		if(count%150==0)
-			dir=-1*dir;
+		if(!pause){
+			posy+=0.0005*dir;
+			center[1] = posy;	
+			count++;
+			if(count%150==0)
+				dir=-1*dir;
 
-		if(scaleFactor>0&&shrink)
-			scaleFactor-=0.001;
-
+			if(scaleFactor>0&&shrink)
+				scaleFactor-=0.001;
+		}
 		MVP = VP * Matrices.model;
 		glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 		if(i==0)
@@ -1235,13 +1244,15 @@ class Comet{
 		bool show;
 		float center[2];
 		float radius;
+		bool pause;
 		Comet(){
 			posx = 5;
 			posy = 2;
 			center[0] = posx;
 			center[1] = posy;
 			radius = 0.1;
-			show = false;
+			show = false;	
+			pause=false;
 		}
 		void create(){
 			int numVertices = 360;
@@ -1265,48 +1276,44 @@ class Comet{
 			com = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
 
 		}
-		
+
 		void createTrain(){
 			static const GLfloat vertex_buffer_data [] = {
-			0,0.1,0,
-			0.2,0.1,0,
-			0.3,0.05,0,
+				0,0.1,0,
+				0.2,0.1,0,
+				0.3,0.05,0,
 
-			0.3,0.05,0,
-			0,0.05,0,
-			0,0.1,0,
+				0.3,0.05,0,
+				0,0.05,0,
+				0,0.1,0,
 
-			0,0.05,0,
-			0.3,0.05,0,
-			0.4,0,0,
-	
-			0.4,0,0,
-			0,0,0,
-			0,0.05,0,
-			
-			0,0,0,	
-			0.4,0,0,
-			0.3,-0.05,0,
+				0,0.05,0,
+				0.3,0.05,0,
+				0.4,0,0,
 
-			0.3,-0.05,0,
-			0,-0.05,0,
-			0,0,0,
+				0.4,0,0,
+				0,0,0,
+				0,0.05,0,
 
-			0,-0.05,0,
-			0.3,-0.05,0,
-			0.2,-0.1,0,
+				0,0,0,	
+				0.4,0,0,
+				0.3,-0.05,0,
 
-			0.2,-0.1,0,
-			0,-0.1,0,
-			0,-0.05,0,
-				
-                };
+				0.3,-0.05,0,
+				0,-0.05,0,
+				0,0,0,
 
-                	static const GLfloat color_buffer_data [] = {
+				0,-0.05,0,
+				0.3,-0.05,0,
+				0.2,-0.1,0,
 
-				1,1,1,
-				1,1,1,
-				1,1,1,
+				0.2,-0.1,0,
+				0,-0.1,0,
+				0,-0.05,0,
+
+			};
+
+			static const GLfloat color_buffer_data [] = {
 
 				1,1,1,
 				1,1,1,
@@ -1335,10 +1342,14 @@ class Comet{
 				1,1,1,
 				1,1,1,
 				1,1,1,
-                };
 
-                train = create3DObject(GL_TRIANGLES, 24, vertex_buffer_data, color_buffer_data, GL_FILL);
-		
+				1,1,1,
+				1,1,1,
+				1,1,1,
+			};
+
+			train = create3DObject(GL_TRIANGLES, 24, vertex_buffer_data, color_buffer_data, GL_FILL);
+
 
 		}
 		void draw(int index){
@@ -1351,8 +1362,10 @@ class Comet{
 
 			glm::mat4 translateTar = glm::translate (glm::vec3(posx, posy, 0));
 			Matrices.model *= (translateTar);
-			posx-=0.03;
-			center[0]=posx;
+			if(!pause){
+				posx-=0.03;
+				center[0]=posx;
+			}
 			MVP = VP * Matrices.model;
 			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 			if(index==0)
@@ -1384,6 +1397,7 @@ class Obstacle{
 	bool collided;
 	public:
 	VAO *obs;
+	bool pause;
 	Obstacle(){
 		posx = 2;
 		posy = 2;
@@ -1392,6 +1406,7 @@ class Obstacle{
 		center[1] = posy;
 		radius = 0.25;
 		collided = false;
+		pause=false;
 	}
 	float getX(){
 		return posx;
@@ -1467,7 +1482,8 @@ class Obstacle{
 		glm::mat4 translateObs = glm::translate (glm::vec3(posx, posy, 0));
 		glm::mat4 rotateObs = glm::rotate((float)(obstacle_rotation*M_PI/180.0f), glm::vec3(0,0,1));
 		Matrices.model *= (translateObs*rotateObs);
-		obstacle_rotation+=0.5;
+		if(!pause)
+			obstacle_rotation+=0.5;
 		MVP = VP * Matrices.model;
 		glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 		draw3DObject(obs);
@@ -1490,6 +1506,7 @@ class Bird{
 	bool isMoving; 
 	float radius;
 	public:
+	bool pause;
 	int hit;
 	bool allowed;
 	float center[2];
@@ -1524,6 +1541,7 @@ class Bird{
 		flag = true;
 		dir = 1;
 		hit=0;
+		pause=false;
 	}
 
 	float getLives(){
@@ -1604,24 +1622,24 @@ class Bird{
 
 	void createSaucer(){
 		int numVertices = 360;
-                        GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
-                        for (int i=0; i<numVertices; i++) {
-                                vertex_buffer_data [3*i] =  0.05 + radius*cos(i*M_PI/180.0f);
-                                vertex_buffer_data [3*i + 1] = radius*sin(i*M_PI/180.0f);
-                                vertex_buffer_data [3*i + 2] = 0;
-                        }
+		GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
+		for (int i=0; i<numVertices; i++) {
+			vertex_buffer_data [3*i] =  0.05 + radius*cos(i*M_PI/180.0f);
+			vertex_buffer_data [3*i + 1] = radius*sin(i*M_PI/180.0f);
+			vertex_buffer_data [3*i + 2] = 0;
+		}
 
 
-                        GLfloat* color_buffer_data = new GLfloat [3*numVertices];
-                        for (int i=0; i<numVertices; i++) {
-                                color_buffer_data [3*i] = 1;
-                                color_buffer_data [3*i + 1] = 0;
-                                color_buffer_data [3*i + 2] = 0;
-                        }
+		GLfloat* color_buffer_data = new GLfloat [3*numVertices];
+		for (int i=0; i<numVertices; i++) {
+			color_buffer_data [3*i] = 1;
+			color_buffer_data [3*i + 1] = 0;
+			color_buffer_data [3*i + 2] = 0;
+		}
 
 
-                        // create3DObject creates and returns a handle to a VAO that can be used later
-                        saucer = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
+		// create3DObject creates and returns a handle to a VAO that can be used later
+		saucer = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
 
 	}
 
@@ -1655,14 +1673,15 @@ class Bird{
 		glm::mat4 moveBird = glm::translate(glm::vec3((float)(initX+posx),float(initY+posy),0.0f)); 
 		glm::mat4 rotateBird = glm::rotate((float)(bird_rotation*M_PI/180.0f), glm::vec3(0,0,1));
 		Matrices.model *= (moveBird*rotateBird);
-		bird_rotation+=0.5;
+		if(!pause)
+			bird_rotation+=0.5;
 		MVP = VP * Matrices.model;
 		glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 		if(index==0)
 			draw3DObject(bird);
 		else
 			draw3DObject(saucer);
-		if(floor){
+		if(floor&&!pause){
 			if(flag){	
 				vel = vel - groundDrag*t;
 				posx = posx + dir*(vel*t - 0.5*groundDrag*t*t);
@@ -1674,7 +1693,7 @@ class Bird{
 				reset();
 			}
 		}
-		else if(isMoving){
+		else if(isMoving&&!pause){
 			float vel_old,theta_old,vel_new,theta_new;
 			if(t>3)
 				allowed=true;	
@@ -1694,7 +1713,7 @@ class Bird{
 		r = target[index].getRadius();
 		if(sqrt(pow((center[0]-cx),2)+pow((center[1]-cy),2))<=(radius + target[index].getRadius()) && !target[index].shrink){
 			target[index].setCollided(true);
-			setScore(getScore() + (int)((1/r)*10 + abs(target[index].getX()*8) + level*5));	
+			setScore(getScore() + (int)((1/r)*4 + abs(target[index].getX()*4) + level*5));	
 			target[index].shrink=true;
 			target[index].setRadius(0);
 			hit++;
@@ -1969,6 +1988,28 @@ class Point{
 
 Point path[20];
 
+
+void pauseGame(bool play){
+	int i;
+	if(!play){
+		angryBird.pause=true;
+		varys[0].pause=true;
+		comet.pause=true;
+		for(i=0;i<7;i++){
+			obstacle[i].pause=true;
+			target[i].pause=true;
+		}
+	}
+	else{
+		angryBird.pause=false;
+		varys[0].pause=false;
+		comet.pause=false;
+		for(i=0;i<7;i++){
+			obstacle[i].pause=false;
+			target[i].pause=false;
+		}
+	}
+}
 /**************************
  * Customizable functions *
  **************************/
@@ -1976,12 +2017,12 @@ GLfloat fov=89.8f;
 GLfloat deltaTime = 0.0f;
 GLfloat factor = 0.01f;
 GLfloat cameraSpeed = 3.0f * deltaTime;
-
+bool on=true;
 void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	// Function is called first on GLFW_PRESS.
 
-	if (action == GLFW_RELEASE && !angryBird.getStatus()) {
+	if (action == GLFW_RELEASE && !angryBird.getStatus()&&!angryBird.pause) {
 		switch (key) {
 			case GLFW_KEY_F:
 				angryBird.setVel(angryBird.getVel()+0.2); 
@@ -2001,21 +2042,15 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 			case GLFW_KEY_SPACE:
 				angryBird.setStatus(!angryBird.getStatus()); 
 				break;
-			case GLFW_KEY_UP:
+			case GLFW_KEY_K:
 				if(angryBird.initY < 3.5)
 					angryBird.initY += 0.2; 
 				angryBird.center[1] = angryBird.initY;			
 				break;
-			case GLFW_KEY_DOWN:
+			case GLFW_KEY_M:
 				if(angryBird.initY > -3.5)
 					angryBird.initY -= 0.2; 
 				angryBird.center[1] = angryBird.initY;			
-				break;
-			case GLFW_KEY_LEFT:
-				cameraPos += glm::normalize(glm::cross(cameraFront,cameraUp))*cameraSpeed*factor;
-				break;
-			case GLFW_KEY_RIGHT:
-				cameraPos -= glm::normalize(glm::cross(cameraFront,cameraUp))*cameraSpeed*factor;
 				break;
 
 			default:
@@ -2023,9 +2058,36 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 		}
 	}
 	else if (action == GLFW_PRESS) {
+		cameraSpeed = 3.0f * deltaTime;
 		switch (key) {
 			case GLFW_KEY_ESCAPE:
 				quit(window);
+				break;
+			case GLFW_KEY_LEFT:
+				cameraPos += glm::normalize(glm::cross(cameraFront,cameraUp))*cameraSpeed*factor;
+				break;
+			case GLFW_KEY_RIGHT:
+				cameraPos -= glm::normalize(glm::cross(cameraFront,cameraUp))*cameraSpeed*factor;
+				break;
+			case GLFW_KEY_UP:
+				if(fov<89)
+					fov=89;
+				if(fov>91)
+					fov=91;
+				if(fov>=89&&fov<=91)
+					fov-=0.1;
+				break;
+			case GLFW_KEY_DOWN:
+				if(fov<89)
+					fov=89;
+				if(fov>91)
+					fov=91;
+				if(fov>=89&&fov<=91)
+					fov+=0.1;
+				break;
+			case GLFW_KEY_P:
+				on=!on;
+				pauseGame(on);
 				break;
 			default:
 				break;
@@ -2082,7 +2144,7 @@ void scroll(GLFWwindow* window,double x,double y){
 		fov=91;
 	if(fov>=89&&fov<=91)
 		fov-=y*0.1;
-        cameraSpeed = 3.0f * deltaTime;
+	cameraSpeed = 3.0f * deltaTime;
 	if(x==-1)
 		cameraPos -= glm::normalize(glm::cross(cameraFront,cameraUp))*cameraSpeed*factor;
 	if(x==1)
@@ -2166,11 +2228,11 @@ GLFWwindow* initGLFW (int width, int height)
 	glfwSetScrollCallback(window, scroll);
 	glfwSetCursorPosCallback(window,mouse_callback);
 	/*stringstream ss;
-	ss << angryBird.getScore();
-	string str = ss.str();	
-	string t = "Angry Birds: Star Wars Edition!!!\t\t\t\t\t\t  Score: " + str;
-	const char *some = t.c_str();
-	glfwSetWindowTitle(window,some);*/
+	  ss << angryBird.getScore();
+	  string str = ss.str();	
+	  string t = "Angry Birds: Star Wars Edition!!!\t\t\t\t\t\t  Score: " + str;
+	  const char *some = t.c_str();
+	  glfwSetWindowTitle(window,some);*/
 	return window;
 }
 
@@ -2296,11 +2358,11 @@ void initGL (GLFWwindow* window, int width, int height)
 	}
 
 	/*for(j=0;j<29;j++){
-		//light[j].posx = (((j)-15)*0.25) + 0.25;
-		//light[j].posy = 3.0 + pow(-1,(j)%2)*0.25;
-		light[j].posx = ((float)((float)(rand()%7) + (-3.2f)));
-		light[j].posy = ((float)((float)(rand()%7) + (-3.2f)));
-		light[j].create(j);
+	//light[j].posx = (((j)-15)*0.25) + 0.25;
+	//light[j].posy = 3.0 + pow(-1,(j)%2)*0.25;
+	light[j].posx = ((float)((float)(rand()%7) + (-3.2f)));
+	light[j].posy = ((float)((float)(rand()%7) + (-3.2f)));
+	light[j].create(j);
 	}*/
 
 	varys[0].createBody();
@@ -2417,13 +2479,13 @@ int main (int argc, char** argv)
 		//		light[i].draw(i);
 		for(i=0;i<7;i++){
 			//if(!target[i].getCollided()&&!angryBird.checkCollision(i)){
-				target[i].draw(0,0,0);
-				target[i].draw(1,0,-10);
-				target[i].draw(1,1,10);
-				target[i].draw(2,0,-10);
-				target[i].draw(2,1,10);
-				target[i].draw(3,0,180);
-				//target[i].draw(4,0,0);
+			target[i].draw(0,0,0);
+			target[i].draw(1,0,-10);
+			target[i].draw(1,1,10);
+			target[i].draw(2,0,-10);
+			target[i].draw(2,1,10);
+			target[i].draw(3,0,180);
+			//target[i].draw(4,0,0);
 			//}
 			//else{
 			//	;//cout << "collided!  " << endl;
@@ -2461,18 +2523,10 @@ int main (int argc, char** argv)
 			cout << "GAME OVER!" << endl;
 			cout << "LEVEL: " << level << endl;
 			cout << "Score: " << angryBird.getScore() << endl;
-			//angryBird.reset();
-			//angryBird.setStatus(False);
-			//angryBird.setLives(3);
-			//initGL (window, width, height);
 			quit(window);
 		}
 		if(angryBird.hit == 7){
-			//cout << "YOU WON!" << endl;
-			//cout << "Score: " << angryBird.getScore() << endl;
-			//cout << "Bonus: " << angryBird.getLives()*50 << endl;
 			angryBird.setScore(angryBird.getScore() + angryBird.getLives()*50);
-			//cout << "Total Score: " << angryBird.getScore() <<endl;
 			angryBird.reset();
 			angryBird.setStatus(false);
 			angryBird.setLives(3);
@@ -2482,7 +2536,7 @@ int main (int argc, char** argv)
 			for(i=0;i<7;i++){
 				target[i].shrink=false;
 				target[i].scaleFactor=1;
-	
+
 			}
 			counter1=0;
 			//quit(window);
@@ -2498,13 +2552,15 @@ int main (int argc, char** argv)
 		if ((current_time - last_update_time) >= 0.025) { // atleast 0.5s elapsed since last frame
 			// do something every 0.5 seconds ..
 			deltaTime+=0.025;
-			counter++;
-			counter1++;
+			if(!angryBird.pause){
+				counter++;
+				counter1++;
+			}
 			//cout << "ct" << counter1 << endl;
-			if(angryBird.getStatus())
+			if(angryBird.getStatus()&&!angryBird.pause)
 				t+=0.025;
 			last_update_time = current_time;
-			if(counter%10==0){
+			if(counter%10==0&&!angryBird.pause){
 				for(k=0;k<39;k++)
 					star[k].twinkle=!star[k].twinkle;
 			}
@@ -2512,7 +2568,7 @@ int main (int argc, char** argv)
 				comet.show=true;
 				comet.posx = 5;
 				comet.center[0] = comet.posx;
-				}
+			}
 		}
 	}
 
