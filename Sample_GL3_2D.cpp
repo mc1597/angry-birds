@@ -222,6 +222,133 @@ class Background{
 		}
 };
 Background bg;
+
+class Board{
+	public:
+	VAO *brd,*cir[2],*tri,*cross;
+	bool levelUp;
+	float radius;
+	Board(){
+		levelUp = false;
+		radius = 0.6;
+	}
+
+	void createBoard(){
+		static const GLfloat vertex_buffer_data [] = {
+                                2,2,0, // vertex 1
+                                2,-2,0, // vertex 2
+                                -2,-2,0, // vertex 3
+
+                                -2,-2,0, // vertex 3
+                                -2,2,0, // vertex 4
+                                2,2,0, // vertex 1
+                        };
+
+                        static const GLfloat color_buffer_data [] = {
+				1,0.5,0,
+				1,0.5,0,
+				1,0.5,0,
+
+				1,0.5,0,
+				1,0.5,0,
+				1,0.5,0,
+                        };
+
+                        brd = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
+
+	}
+
+	void createRedCircle(int index,float cx,float cy){
+
+		 int numVertices = 360;
+                        GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
+                        for (int i=0; i<numVertices; i++) {
+                                vertex_buffer_data [3*i] = cx + radius*cos(i*M_PI/180.0f);
+                                vertex_buffer_data [3*i + 1] = cy + radius*sin(i*M_PI/180.0f);
+                                vertex_buffer_data [3*i + 2] = 0;
+                        }
+
+
+                        GLfloat* color_buffer_data = new GLfloat [3*numVertices];
+                        for (int i=0; i<numVertices; i++) {
+                                color_buffer_data [3*i] = 1;
+                                color_buffer_data [3*i + 1] = 0;
+                                color_buffer_data [3*i + 2] = 0;
+                        }
+
+
+                        // create3DObject creates and returns a handle to a VAO that can be used later
+                        cir[index] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
+
+	}
+
+
+	void createCross(){
+
+       static const GLfloat vertex_buffer_data [] = {
+			0.3,1.7,0,
+			1.7,1.7,0,
+			
+			1.7,0.3,0,
+			0.3,0.3,0,
+                        };
+
+                        static const GLfloat color_buffer_data [] = {
+				1,1,1,
+				1,1,1,
+				1,1,1,
+				1,1,1,
+
+                        };
+
+                        cross = create3DObject(GL_LINES, 4, vertex_buffer_data, color_buffer_data, GL_FILL);
+
+	}
+	void createTriangle(){
+
+       static const GLfloat vertex_buffer_data [] = {
+                                -0.4,0,0, // vertex 1
+                                -1.2,0.58,0, // vertex 2
+                                -1.2,-0.58,0, // vertex 3
+
+                        };
+
+                        static const GLfloat color_buffer_data [] = {
+				1,1,1,
+				1,1,1,
+				1,1,1,
+
+                        };
+
+                        tri = create3DObject(GL_TRIANGLES, 3, vertex_buffer_data, color_buffer_data, GL_FILL);
+
+
+	}
+
+	void draw(int index){
+		Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
+                glm::mat4 VP = Matrices.projection * Matrices.view;
+                glm::mat4 MVP;  // MVP = Projection * View * Model
+                Matrices.model = glm::mat4(1.0f);
+
+		MVP = VP * Matrices.model;
+		glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+		if(index==0)
+			draw3DObject(brd);
+		if(index==1)
+			draw3DObject(cir[0]);
+		if(index==2)
+			draw3DObject(cir[1]);
+		if(index==3)
+			draw3DObject(tri);
+		if(index==4)
+			draw3DObject(cross);
+			
+			
+	}
+};
+
+Board board;
 class Border{
 
 	char dir;
@@ -2017,6 +2144,8 @@ GLfloat fov=89.8f;
 GLfloat deltaTime = 0.0f;
 GLfloat factor = 0.01f;
 GLfloat cameraSpeed = 3.0f * deltaTime;
+bool pressNext=false;
+bool goNext=false;
 bool on=true;
 void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -2113,19 +2242,35 @@ void keyboardChar (GLFWwindow* window, unsigned int key)
 /* Executed when a mouse button is pressed/released */
 double slope;
 void mouse_callback(GLFWwindow* window,double x,double y){
+	if(!angryBird.pause){
 	double bird_x=38.0f,bird_y=300.0f;
 	slope = atan((y-bird_y)/(x-bird_x));
 	slope = (-1*slope*180.0/M_PI)+20;
+	}
+	if(pressNext&&x>180&&x<270&&y>250&&y<340)
+				goNext = true;
+	if(pressNext&&x>330&&x<420&&y>250&&y<340){
+			cout << "Your score: " << angryBird.getScore() << endl;
+			cout << "LEVEL: " << level << endl;
+			quit(window);
+		}
+
 }
 void mouseButton (GLFWwindow* window, int button, int action, int mods)
 {
 	switch (button) {
 		case GLFW_MOUSE_BUTTON_LEFT:
+			if (action == GLFW_PRESS){
+				pressNext=true;
+			}
+			break;
 			if (action == GLFW_RELEASE)
-				angryBird.setAngle(slope);
+				pressNext=false;
 			break;
 		case GLFW_MOUSE_BUTTON_RIGHT:
 			if (action == GLFW_PRESS) {
+				if(!angryBird.pause)
+					angryBird.setAngle(slope);
 				//rectangle_rot_dir *= -1;
 			}
 			break;
@@ -2255,6 +2400,12 @@ void initGL (GLFWwindow* window, int width, int height)
 	for(i=1;i<20;i++){
 		path[i].create();
 	}
+
+	board.createBoard();
+	board.createRedCircle(0,-1,0);
+	board.createRedCircle(1,1,0);
+	board.createTriangle();
+	board.createCross();
 	for(j=0;j<7;j++){
 
 		target[j].setX((float)((float)(rand()%7) + (-3.2f)));
@@ -2421,6 +2572,29 @@ void initGL (GLFWwindow* window, int width, int height)
 	//cout << "VERSION: " << glGetString(GL_VERSION) << endl;
 	//cout << "GLSL: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
 }
+
+void next_level(GLFWwindow* window, int width, int height){
+	int i;
+	goNext=false;
+	angryBird.setScore(angryBird.getScore() + angryBird.getLives()*50);
+	angryBird.reset();
+	angryBird.setStatus(false);
+	angryBird.setLives(3);
+	angryBird.hit=0;
+	level++;
+	initGL (window, width, height);
+	for(i=0;i<7;i++){
+		target[i].shrink=false;
+		target[i].scaleFactor=1;
+
+	}
+	counter1=0;
+	pauseGame(true);
+	board.levelUp=false;
+	goNext=false;
+
+}
+
 int main (int argc, char** argv)
 {
 	int width = 600;
@@ -2525,21 +2699,18 @@ int main (int argc, char** argv)
 			cout << "Score: " << angryBird.getScore() << endl;
 			quit(window);
 		}
-		if(angryBird.hit == 7){
-			angryBird.setScore(angryBird.getScore() + angryBird.getLives()*50);
-			angryBird.reset();
-			angryBird.setStatus(false);
-			angryBird.setLives(3);
-			angryBird.hit=0;
-			level++;
-			initGL (window, width, height);
-			for(i=0;i<7;i++){
-				target[i].shrink=false;
-				target[i].scaleFactor=1;
-
+		if(angryBird.hit == 1){
+			pauseGame(false);
+			board.levelUp=true;
+			board.draw(0);
+			board.draw(1);
+			board.draw(2);
+			board.draw(3);
+			board.draw(4);
+			if(goNext&&board.levelUp){
+				goNext=false;
+				next_level(window, width, height);
 			}
-			counter1=0;
-			//quit(window);
 		}
 		// Swap Frame Buffer in double buffering
 		glfwSwapBuffers(window);
