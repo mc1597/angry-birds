@@ -1004,6 +1004,8 @@ class Target{
 	bool collided;
 	public:
 	int dir;
+	float scaleFactor;
+	bool shrink;
 	VAO *tar,*eye[2],*pupil[2],*mouth,*tooth;
 	int count;
 	Target(){
@@ -1018,6 +1020,8 @@ class Target{
 		collided = false;
 		count = 0;
 		dir=1;
+		scaleFactor=1;
+		shrink=false;
 	}
 	float getX(){
 		return posx;
@@ -1197,10 +1201,15 @@ class Target{
 		posy+=0.0005*dir;
 		center[1] = posy;	
 		glm::mat4 rotateTar = glm::rotate((float)(angle*M_PI/180.0f), glm::vec3(0,0,1));
-		Matrices.model *= (translateTar * rotateTar);
+		glm::mat4 scaleTar = glm::scale (glm::vec3(scaleFactor, scaleFactor, 0));
+		Matrices.model *= (translateTar * rotateTar * scaleTar);
 		count++;
 		if(count%150==0)
 			dir=-1*dir;
+
+		if(scaleFactor>0&&shrink)
+			scaleFactor-=0.001;
+
 		MVP = VP * Matrices.model;
 		glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 		if(i==0)
@@ -1609,20 +1618,19 @@ class Bird{
 		}
 	}
 
-	bool checkCollision(int index){
+	void checkCollision(int index){
 		float cx,cy;
 		float r;
 		cx = target[index].getCenter()[0];
 		cy = target[index].getCenter()[1];
 		r = target[index].getRadius();
-		if(sqrt(pow((center[0]-cx),2)+pow((center[1]-cy),2))<=(radius + target[index].getRadius())){
+		if(sqrt(pow((center[0]-cx),2)+pow((center[1]-cy),2))<=(radius + target[index].getRadius()) && !target[index].shrink){
 			target[index].setCollided(true);
 			setScore(getScore() + (int)((1/r)*10 + abs(target[index].getX()*8)));	
 			hit++;
-			return true;
-		}
-		else{
-			return false;	
+			//cout << "Hits: " << hit << endl;	
+			target[index].shrink=true;
+			target[index].setRadius(0);
 		}
 	}
 
@@ -1658,7 +1666,6 @@ class Bird{
 				center[0] = 0.05 + initX; 
 				center[1] = 0 + initY;
 				allowed=false;
-				vel = 1.2;
 				dir = -1*dir;
 				isMoving=true;
 				if(dir==-1)
@@ -1679,7 +1686,6 @@ class Bird{
 				center[0] = 0.05 + initX; 
 				center[1] = 0 + initY;
 				isMoving=true;
-				vel = 1.2;
 				dir = -1*dir;
 				if(dir==-1)
 					theta = 135;
@@ -2109,7 +2115,7 @@ void initGL (GLFWwindow* window, int width, int height)
 		target[j].setX((float)((float)(rand()%7) + (-3.2f)));
 		target[j].setY((float)((float)(rand()%7) + (-3.2f)));
 		target[j].setCenter(target[j].getX(),target[j].getY());
-		target[j].setRadius((float)((float)((rand()%25)+25)/100));
+		target[j].setRadius((float)((float)((rand()%20)+35)/100));
 		target[j].create();		
 		target[j].createEye(0,(target[j].getRadius()/2),target[j].getRadius()/4);
 		target[j].createEye(1,-1*(target[j].getRadius()/2),target[j].getRadius()/4);
@@ -2274,6 +2280,8 @@ int main (int argc, char** argv)
 	int width = 600;
 	int height = 600;
 	int i,j,k,num;
+	num = rand()%400 + 200;
+	//cout << num << endl;
 	GLFWwindow* window = initGLFW(width, height);
 	initGL (window, width, height);
 	bool blink = true;
@@ -2313,7 +2321,7 @@ int main (int argc, char** argv)
 		//	for(i=0;i<29;i++)
 		//		light[i].draw(i);
 		for(i=0;i<7;i++){
-			if(!target[i].getCollided()&&!angryBird.checkCollision(i)){
+			//if(!target[i].getCollided()&&!angryBird.checkCollision(i)){
 				target[i].draw(0,0,0);
 				target[i].draw(1,0,-10);
 				target[i].draw(1,1,10);
@@ -2321,10 +2329,10 @@ int main (int argc, char** argv)
 				target[i].draw(2,1,10);
 				target[i].draw(3,0,180);
 				//target[i].draw(4,0,0);
-			}
-			else{
-				;//cout << "collided!  " << endl;
-			}
+			//}
+			//else{
+			//	;//cout << "collided!  " << endl;
+			//}
 		}
 		for(i=0;i<7;i++)
 			obstacle[i].draw();
@@ -2345,6 +2353,8 @@ int main (int argc, char** argv)
 		if(angryBird.getStatus()){
 			angryBird.checkWall();
 			angryBird.checkFloor();
+			for(i=0;i<7;i++)
+				angryBird.checkCollision(i);
 			for(i=0;i<7;i++)
 				angryBird.checkObstacle(i);
 			angryBird.checkVarys();
@@ -2384,12 +2394,12 @@ int main (int argc, char** argv)
 			if(counter%10==0){
 				for(k=0;k<39;k++)
 					star[k].twinkle=!star[k].twinkle;
-				if(counter1 == 100){
-					comet.show=true;
-					comet.posx = 5;
-					comet.center[0] = comet.posx;
-				}
 			}
+			if(counter1 == num){
+				comet.show=true;
+				comet.posx = 5;
+				comet.center[0] = comet.posx;
+				}
 		}
 	}
 
