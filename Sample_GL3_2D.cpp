@@ -5,7 +5,10 @@
 #include <vector>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
+#include <time.h>
+#include <unistd.h>
+#include <string>
+#include <sstream>
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -202,7 +205,8 @@ void draw3DObject (struct VAO* vao)
 float gravity = 0.6,airDrag = 0.005,friction = 0.1,t=0,groundDrag = 0.5;
 float camera_rotation_angle = 90;
 int counter,counter1;
-bool twinkleOverride = true;
+bool twinkleOverride = false;
+int level=1;
 glm::vec3 cameraPos = glm::vec3(0.0f,0.0f,3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f,0.0f,-1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f,1.0f,0.0f);
@@ -1182,13 +1186,6 @@ class Target{
 
 	}
 	void draw(int i,int index,float angle){
-		/*glUseProgram (programID);
-
-		  glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
-		  glm::vec3 target (0, 0, 0);
-		  glm::vec3 up (0, 1, 0);
-		 */
-		//Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
 
 		Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
 		glm::mat4 VP = Matrices.projection * Matrices.view;
@@ -1232,7 +1229,7 @@ Target target[7];
 
 class Comet{
 	public:
-		VAO *com;
+		VAO *com,*train;
 		float posx;
 		float posy;
 		bool show;
@@ -1268,8 +1265,83 @@ class Comet{
 			com = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
 
 		}
+		
+		void createTrain(){
+			static const GLfloat vertex_buffer_data [] = {
+			0,0.1,0,
+			0.2,0.1,0,
+			0.3,0.05,0,
 
-		void draw(){
+			0.3,0.05,0,
+			0,0.05,0,
+			0,0.1,0,
+
+			0,0.05,0,
+			0.3,0.05,0,
+			0.4,0,0,
+	
+			0.4,0,0,
+			0,0,0,
+			0,0.05,0,
+			
+			0,0,0,	
+			0.4,0,0,
+			0.3,-0.05,0,
+
+			0.3,-0.05,0,
+			0,-0.05,0,
+			0,0,0,
+
+			0,-0.05,0,
+			0.3,-0.05,0,
+			0.2,-0.1,0,
+
+			0.2,-0.1,0,
+			0,-0.1,0,
+			0,-0.05,0,
+				
+                };
+
+                	static const GLfloat color_buffer_data [] = {
+
+				1,1,1,
+				1,1,1,
+				1,1,1,
+
+				1,1,1,
+				1,1,1,
+				1,1,1,
+
+				1,1,1,
+				1,1,1,
+				1,1,1,
+
+				1,1,1,
+				1,1,1,
+				1,1,1,
+
+				1,1,1,
+				1,1,1,
+				1,1,1,
+
+				1,1,1,
+				1,1,1,
+				1,1,1,
+
+				1,1,1,
+				1,1,1,
+				1,1,1,
+
+				1,1,1,
+				1,1,1,
+				1,1,1,
+                };
+
+                train = create3DObject(GL_TRIANGLES, 24, vertex_buffer_data, color_buffer_data, GL_FILL);
+		
+
+		}
+		void draw(int index){
 			Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
 			glm::mat4 VP = Matrices.projection * Matrices.view;
 			glm::mat4 MVP;  // MVP = Projection * View * Model
@@ -1283,7 +1355,10 @@ class Comet{
 			center[0]=posx;
 			MVP = VP * Matrices.model;
 			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
-			draw3DObject(com);
+			if(index==0)
+				draw3DObject(com);
+			if(index==1)
+				draw3DObject(train);
 
 
 		}
@@ -1381,13 +1456,6 @@ class Obstacle{
 	}
 
 	void draw(){
-		/*glUseProgram (programID);
-
-		  glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
-		  glm::vec3 target (0, 0, 0);
-		  glm::vec3 up (0, 1, 0);
-		 */
-		//Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
 
 		Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
 		glm::mat4 VP = Matrices.projection * Matrices.view;
@@ -1626,11 +1694,11 @@ class Bird{
 		r = target[index].getRadius();
 		if(sqrt(pow((center[0]-cx),2)+pow((center[1]-cy),2))<=(radius + target[index].getRadius()) && !target[index].shrink){
 			target[index].setCollided(true);
-			setScore(getScore() + (int)((1/r)*10 + abs(target[index].getX()*8)));	
-			hit++;
-			//cout << "Hits: " << hit << endl;	
+			setScore(getScore() + (int)((1/r)*10 + abs(target[index].getX()*8) + level*5));	
 			target[index].shrink=true;
 			target[index].setRadius(0);
+			hit++;
+			//cout << "Hits: " << hit << endl;	
 		}
 	}
 
@@ -1639,7 +1707,6 @@ class Bird{
 		cx = comet.center[0];
 		cy = comet.center[1];
 		if(sqrt(pow((center[0]-cx),2)+pow((center[1]-cy),2))<=(radius + 0.1)){
-			setScore(getScore() + 100);
 			setLives(getLives() + 1);
 			comet.show=false;
 			comet.posx = 5;
@@ -1701,7 +1768,7 @@ class Bird{
 		cx = varys[0].center[0];
 		cy = varys[0].center[1];
 		if(sqrt(pow((center[0]-cx),2)+pow((center[1]-cy),2))<=(radius + 0.2)){
-			setScore(getScore() - 10);	
+			setScore(getScore() - (10*level));	
 			reset();
 
 		}
@@ -1905,6 +1972,10 @@ Point path[20];
 /**************************
  * Customizable functions *
  **************************/
+GLfloat fov=89.8f;
+GLfloat deltaTime = 0.0f;
+GLfloat factor = 0.01f;
+GLfloat cameraSpeed = 3.0f * deltaTime;
 
 void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -1940,6 +2011,13 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 					angryBird.initY -= 0.2; 
 				angryBird.center[1] = angryBird.initY;			
 				break;
+			case GLFW_KEY_LEFT:
+				cameraPos += glm::normalize(glm::cross(cameraFront,cameraUp))*cameraSpeed*factor;
+				break;
+			case GLFW_KEY_RIGHT:
+				cameraPos -= glm::normalize(glm::cross(cameraFront,cameraUp))*cameraSpeed*factor;
+				break;
+
 			default:
 				break;
 		}
@@ -1961,6 +2039,8 @@ void keyboardChar (GLFWwindow* window, unsigned int key)
 	switch (key) {
 		case 'Q':
 		case 'q':
+			cout << "Your score: " << angryBird.getScore() << endl;
+			cout << "LEVEL: " << level << endl;
 			quit(window);
 			break;
 		default:
@@ -1992,9 +2072,7 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
 	}
 }
 
-GLfloat fov=89.8f;
-GLfloat deltaTime = 0.0f;
-GLfloat factor = 0.01f;
+
 
 void scroll(GLFWwindow* window,double x,double y){
 
@@ -2004,7 +2082,7 @@ void scroll(GLFWwindow* window,double x,double y){
 		fov=91;
 	if(fov>=89&&fov<=91)
 		fov-=y*0.1;
-	GLfloat cameraSpeed = 3.0f * deltaTime;
+        cameraSpeed = 3.0f * deltaTime;
 	if(x==-1)
 		cameraPos -= glm::normalize(glm::cross(cameraFront,cameraUp))*cameraSpeed*factor;
 	if(x==1)
@@ -2087,7 +2165,12 @@ GLFWwindow* initGLFW (int width, int height)
 	glfwSetMouseButtonCallback(window, mouseButton);  // mouse button clicks
 	glfwSetScrollCallback(window, scroll);
 	glfwSetCursorPosCallback(window,mouse_callback);
-
+	/*stringstream ss;
+	ss << angryBird.getScore();
+	string str = ss.str();	
+	string t = "Angry Birds: Star Wars Edition!!!\t\t\t\t\t\t  Score: " + str;
+	const char *some = t.c_str();
+	glfwSetWindowTitle(window,some);*/
 	return window;
 }
 
@@ -2241,6 +2324,7 @@ void initGL (GLFWwindow* window, int width, int height)
 	comet.show = false;
 	comet.posy = rand()%5 - 2;
 	comet.center[1] = comet.posy;
+	comet.createTrain();
 	comet.create();
 	portal[0].posx = 2.8;
 	portal[0].posy = 1.5;
@@ -2280,6 +2364,8 @@ int main (int argc, char** argv)
 	int width = 600;
 	int height = 600;
 	int i,j,k,num;
+	stringstream ss1,ss2;
+	string convStr1,convStr2,concatStr;
 	num = rand()%400 + 200;
 	//cout << num << endl;
 	GLFWwindow* window = initGLFW(width, height);
@@ -2292,6 +2378,15 @@ int main (int argc, char** argv)
 	while (!glfwWindowShouldClose(window)) {
 		// OpenGL Draw commands
 		reshapeWindow (window, width, height);
+		ss1.str("");	
+		ss2.str("");	
+		ss1 << angryBird.getScore();
+		ss2 << level;
+		convStr1 = ss1.str();	
+		convStr2 = ss2.str();	
+		concatStr = "Angry Birds: Star Wars Edition!!!\t\t\t Level: " +  convStr2 + "\t\tScore: " + convStr1;
+		const char *gameTitle = concatStr.c_str();
+		glfwSetWindowTitle(window,gameTitle);
 		bg.draw();
 		sun.draw(0);
 		sun.draw(1);
@@ -2346,7 +2441,8 @@ int main (int argc, char** argv)
 			heart[i].draw(2);
 		}
 		if(comet.show){
-			comet.draw();
+			comet.draw(1);
+			comet.draw(0);
 			angryBird.checkComet();
 		}
 		comet.stop();
@@ -2363,16 +2459,33 @@ int main (int argc, char** argv)
 		}
 		if(angryBird.getLives() <= 0){
 			cout << "GAME OVER!" << endl;
+			cout << "LEVEL: " << level << endl;
 			cout << "Score: " << angryBird.getScore() << endl;
+			//angryBird.reset();
+			//angryBird.setStatus(False);
+			//angryBird.setLives(3);
+			//initGL (window, width, height);
 			quit(window);
 		}
 		if(angryBird.hit == 7){
-			cout << "YOU WON!" << endl;
-			cout << "Score: " << angryBird.getScore() << endl;
-			cout << "Bonus: " << angryBird.getLives()*50 << endl;
+			//cout << "YOU WON!" << endl;
+			//cout << "Score: " << angryBird.getScore() << endl;
+			//cout << "Bonus: " << angryBird.getLives()*50 << endl;
 			angryBird.setScore(angryBird.getScore() + angryBird.getLives()*50);
-			cout << "Total Score: " << angryBird.getScore() <<endl;
-			quit(window);
+			//cout << "Total Score: " << angryBird.getScore() <<endl;
+			angryBird.reset();
+			angryBird.setStatus(false);
+			angryBird.setLives(3);
+			angryBird.hit=0;
+			level++;
+			initGL (window, width, height);
+			for(i=0;i<7;i++){
+				target[i].shrink=false;
+				target[i].scaleFactor=1;
+	
+			}
+			counter1=0;
+			//quit(window);
 		}
 		// Swap Frame Buffer in double buffering
 		glfwSwapBuffers(window);
