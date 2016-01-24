@@ -78,7 +78,7 @@ GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path
 	glGetShaderiv(VertexShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
 	std::vector<char> VertexShaderErrorMessage(InfoLogLength);
 	glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
-	fprintf(stdout, "%s\n", &VertexShaderErrorMessage[0]);
+	fprintf(stdout, "%s", &VertexShaderErrorMessage[0]);
 
 	// Compile Fragment Shader
 	//printf("Compiling shader : %s\n", fragment_file_path);
@@ -91,7 +91,7 @@ GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path
 	glGetShaderiv(FragmentShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
 	std::vector<char> FragmentShaderErrorMessage(InfoLogLength);
 	glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
-	fprintf(stdout, "%s\n", &FragmentShaderErrorMessage[0]);
+	fprintf(stdout, "%s", &FragmentShaderErrorMessage[0]);
 
 	// Link the program
 	//fprintf(stdout, "Linking program\n");
@@ -105,7 +105,7 @@ GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path
 	glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
 	std::vector<char> ProgramErrorMessage( max(InfoLogLength, int(1)) );
 	glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
-	fprintf(stdout, "%s\n", &ProgramErrorMessage[0]);
+	fprintf(stdout, "%s", &ProgramErrorMessage[0]);
 
 	glDeleteShader(VertexShaderID);
 	glDeleteShader(FragmentShaderID);
@@ -225,7 +225,7 @@ Background bg;
 
 class Board{
 	public:
-	VAO *brd,*cir[2],*tri,*cross;
+	VAO *brd,*cir[2],*tri,*cross[2];
 	bool levelUp;
 	float radius;
 	Board(){
@@ -283,25 +283,47 @@ class Board{
 	}
 
 
-	void createCross(){
+	void createCross(int index){
 
        static const GLfloat vertex_buffer_data [] = {
-			0.3,1.7,0,
-			1.7,1.7,0,
+			0.58,0.04,0,
+			0.58,-0.04,0,
+			-0.62,-0.04,0,
+
+			-0.62,-0.04,0,
+			-0.62,0.04,0,
+			0.58,0.04,0,
 			
-			1.7,0.3,0,
-			0.3,0.3,0,
+			0.04,0.58,0,
+			-0.04,0.58,0,
+			-0.04,-0.58,0,
+
+			-0.04,-0.58,0,
+			0.04,-0.58,0,
+			0.04,0.58,0,
+			
                         };
 
                         static const GLfloat color_buffer_data [] = {
 				1,1,1,
 				1,1,1,
 				1,1,1,
+
+				1,1,1,
+				1,1,1,
+				1,1,1,
+
+				1,1,1,
+				1,1,1,
+				1,1,1,
+
+				1,1,1,
+				1,1,1,
 				1,1,1,
 
                         };
 
-                        cross = create3DObject(GL_LINES, 4, vertex_buffer_data, color_buffer_data, GL_FILL);
+                        cross[index] = create3DObject(GL_TRIANGLES, 12, vertex_buffer_data, color_buffer_data, GL_FILL);
 
 	}
 	void createTriangle(){
@@ -330,6 +352,17 @@ class Board{
                 glm::mat4 VP = Matrices.projection * Matrices.view;
                 glm::mat4 MVP;  // MVP = Projection * View * Model
                 Matrices.model = glm::mat4(1.0f);
+		if(index==4){
+		glm::mat4 translateCr = glm::translate(glm::vec3(1,0,0));
+		glm::mat4 rotateCr = glm::rotate((float)(45*M_PI/180.0f), glm::vec3(0,0,1));
+
+		Matrices.model *= (translateCr*rotateCr);
+		}
+		if(index==5){
+		glm::mat4 translateCr = glm::translate(glm::vec3(-1,0,0));
+
+		Matrices.model *= (translateCr);
+		}
 
 		MVP = VP * Matrices.model;
 		glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
@@ -342,7 +375,9 @@ class Board{
 		if(index==3)
 			draw3DObject(tri);
 		if(index==4)
-			draw3DObject(cross);
+			draw3DObject(cross[0]);
+		if(index==5)
+			draw3DObject(cross[1]);
 			
 			
 	}
@@ -1844,7 +1879,6 @@ class Bird{
 			target[index].shrink=true;
 			target[index].setRadius(0);
 			hit++;
-			//cout << "Hits: " << hit << endl;	
 		}
 	}
 
@@ -2165,9 +2199,6 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 			case GLFW_KEY_A:
 				angryBird.setAngle(angryBird.getAngle()+5); 
 				break;
-			case GLFW_KEY_T:
-				twinkleOverride = !twinkleOverride; 
-				break;
 			case GLFW_KEY_SPACE:
 				angryBird.setStatus(!angryBird.getStatus()); 
 				break;
@@ -2218,6 +2249,10 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 				on=!on;
 				pauseGame(on);
 				break;
+			case GLFW_KEY_T:
+				if(!angryBird.pause)
+					twinkleOverride = !twinkleOverride; 
+				break;
 			default:
 				break;
 		}
@@ -2241,27 +2276,30 @@ void keyboardChar (GLFWwindow* window, unsigned int key)
 
 /* Executed when a mouse button is pressed/released */
 double slope;
+double mouse_X,mouse_Y;
 void mouse_callback(GLFWwindow* window,double x,double y){
 	if(!angryBird.pause){
 	double bird_x=38.0f,bird_y=300.0f;
 	slope = atan((y-bird_y)/(x-bird_x));
 	slope = (-1*slope*180.0/M_PI)+20;
 	}
-	if(pressNext&&x>180&&x<270&&y>250&&y<340)
-				goNext = true;
-	if(pressNext&&x>330&&x<420&&y>250&&y<340){
-			cout << "Your score: " << angryBird.getScore() << endl;
-			cout << "LEVEL: " << level << endl;
-			quit(window);
-		}
 
+	mouse_X = x;
+	mouse_Y = y;
 }
 void mouseButton (GLFWwindow* window, int button, int action, int mods)
 {
 	switch (button) {
 		case GLFW_MOUSE_BUTTON_LEFT:
 			if (action == GLFW_PRESS){
-				pressNext=true;
+				if(mouse_X>180&&mouse_X<270&&mouse_Y>250&&mouse_Y<340)
+					goNext = true;
+				if(mouse_X>330&&mouse_X<420&&mouse_Y>250&&mouse_Y<340){
+					cout << "Your score: " << angryBird.getScore() << endl;
+					cout << "LEVEL: " << level << endl;
+					quit(window);
+				}
+		
 			}
 			break;
 			if (action == GLFW_RELEASE)
@@ -2405,7 +2443,8 @@ void initGL (GLFWwindow* window, int width, int height)
 	board.createRedCircle(0,-1,0);
 	board.createRedCircle(1,1,0);
 	board.createTriangle();
-	board.createCross();
+	board.createCross(0);
+	board.createCross(1);
 	for(j=0;j<7;j++){
 
 		target[j].setX((float)((float)(rand()%7) + (-3.2f)));
@@ -2556,10 +2595,11 @@ void initGL (GLFWwindow* window, int width, int height)
 	programID = LoadShaders( "Sample_GL.vert", "Sample_GL.frag" );
 	// Get a handle for our "MVP" uniform
 	Matrices.MatrixID = glGetUniformLocation(programID, "MVP");
-
+	
 
 	reshapeWindow (window, width, height);
-
+	goNext=false;
+	pressNext=false;
 	// Background color of the scene
 	glClearColor (0.0f, 0.2f, 0.4f, 1.0f); // R, G, B, A
 	glClearDepth (1.0f);
@@ -2592,6 +2632,28 @@ void next_level(GLFWwindow* window, int width, int height){
 	pauseGame(true);
 	board.levelUp=false;
 	goNext=false;
+
+}
+
+void new_game(GLFWwindow* window, int width, int height){
+        int i;
+        goNext=false;
+        angryBird.setScore(0);
+        angryBird.reset();
+        angryBird.setStatus(false);
+        angryBird.setLives(3);
+        angryBird.hit=0;
+        level=1;
+        initGL (window, width, height);
+        for(i=0;i<7;i++){
+                target[i].shrink=false;
+                target[i].scaleFactor=1;
+
+        }
+        counter1=0;
+        pauseGame(true);
+        board.levelUp=false;
+        goNext=false;
 
 }
 
@@ -2652,18 +2714,12 @@ int main (int argc, char** argv)
 		//	for(i=0;i<29;i++)
 		//		light[i].draw(i);
 		for(i=0;i<7;i++){
-			//if(!target[i].getCollided()&&!angryBird.checkCollision(i)){
 			target[i].draw(0,0,0);
 			target[i].draw(1,0,-10);
 			target[i].draw(1,1,10);
 			target[i].draw(2,0,-10);
 			target[i].draw(2,1,10);
 			target[i].draw(3,0,180);
-			//target[i].draw(4,0,0);
-			//}
-			//else{
-			//	;//cout << "collided!  " << endl;
-			//}
 		}
 		for(i=0;i<7;i++)
 			obstacle[i].draw();
@@ -2694,12 +2750,20 @@ int main (int argc, char** argv)
 			angryBird.checkPortal();
 		}
 		if(angryBird.getLives() <= 0){
-			cout << "GAME OVER!" << endl;
-			cout << "LEVEL: " << level << endl;
-			cout << "Score: " << angryBird.getScore() << endl;
-			quit(window);
+			pauseGame(false);
+			board.levelUp=true;
+			board.draw(0);
+			board.draw(1);
+			board.draw(2);
+			board.draw(5);
+			board.draw(4);
+			if(goNext&&board.levelUp){
+				goNext=false;
+				new_game(window, width, height);
+			}	
+			//quit(window);
 		}
-		if(angryBird.hit == 1){
+		if(angryBird.hit == 7){
 			pauseGame(false);
 			board.levelUp=true;
 			board.draw(0);
@@ -2727,7 +2791,6 @@ int main (int argc, char** argv)
 				counter++;
 				counter1++;
 			}
-			//cout << "ct" << counter1 << endl;
 			if(angryBird.getStatus()&&!angryBird.pause)
 				t+=0.025;
 			last_update_time = current_time;
