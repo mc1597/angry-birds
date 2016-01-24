@@ -225,7 +225,7 @@ Background bg;
 
 class Board{
 	public:
-		VAO *brd,*cir[2],*tri,*cross[2];
+		VAO *brd,*bbrd,*cir[2],*tri,*cross[2],*dcir[2];
 		bool levelUp;
 		float radius;
 		Board(){
@@ -233,15 +233,40 @@ class Board{
 			radius = 0.6;
 		}
 
+		void createBrownBoard(){
+			static const GLfloat vertex_buffer_data [] = {
+				2,1.6,0, // vertex 1
+				2,-1.6,0, // vertex 2
+				-2,-1.6,0, // vertex 3
+
+				-2,-1.6,0, // vertex 3
+				-2,1.6,0, // vertex 4
+				2,1.6,0, // vertex 1
+			};
+
+			static const GLfloat color_buffer_data [] = {
+				0.5,0.35,0.05,
+				0.5,0.35,0.05,
+				0.5,0.35,0.05,
+
+				0.5,0.35,0.05,
+				0.5,0.35,0.05,
+				0.5,0.35,0.05,
+			};
+
+			bbrd = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
+
+		}
+
 		void createBoard(){
 			static const GLfloat vertex_buffer_data [] = {
-				2,2,0, // vertex 1
-				2,-2,0, // vertex 2
-				-2,-2,0, // vertex 3
+				1.8,1.4,0, // vertex 1
+				1.8,-1.4,0, // vertex 2
+				-1.8,-1.4,0, // vertex 3
 
-				-2,-2,0, // vertex 3
-				-2,2,0, // vertex 4
-				2,2,0, // vertex 1
+				-1.8,-1.4,0, // vertex 3
+				-1.8,1.4,0, // vertex 4
+				1.8,1.4,0, // vertex 1
 			};
 
 			static const GLfloat color_buffer_data [] = {
@@ -255,6 +280,30 @@ class Board{
 			};
 
 			brd = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
+
+		}
+
+		void createDarkRedCircle(int index,float cx,float cy){
+
+			int numVertices = 360;
+			GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
+			for (int i=0; i<numVertices; i++) {
+				vertex_buffer_data [3*i] = cx + (radius+0.1)*cos(i*M_PI/180.0f);
+				vertex_buffer_data [3*i + 1] = cy + (radius+0.1)*sin(i*M_PI/180.0f);
+				vertex_buffer_data [3*i + 2] = 0;
+			}
+
+
+			GLfloat* color_buffer_data = new GLfloat [3*numVertices];
+			for (int i=0; i<numVertices; i++) {
+				color_buffer_data [3*i] = 0.67;
+				color_buffer_data [3*i + 1] = 0;
+				color_buffer_data [3*i + 2] = 0;
+			}
+
+
+			// create3DObject creates and returns a handle to a VAO that can be used later
+			dcir[index] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
 
 		}
 
@@ -366,6 +415,8 @@ class Board{
 
 			MVP = VP * Matrices.model;
 			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+			if(index==-1)
+				draw3DObject(bbrd);
 			if(index==0)
 				draw3DObject(brd);
 			if(index==1)
@@ -378,6 +429,10 @@ class Board{
 				draw3DObject(cross[0]);
 			if(index==5)
 				draw3DObject(cross[1]);
+			if(index==6)
+				draw3DObject(dcir[0]);
+			if(index==7)
+				draw3DObject(dcir[1]);
 
 
 		}
@@ -2223,27 +2278,33 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 			case GLFW_KEY_ESCAPE:
 				quit(window);
 				break;
-			case GLFW_KEY_LEFT:
-				cameraPos += glm::normalize(glm::cross(cameraFront,cameraUp))*cameraSpeed*factor;
+			case GLFW_KEY_LEFT:	
+				if(!angryBird.pause)
+					cameraPos += glm::normalize(glm::cross(cameraFront,cameraUp))*cameraSpeed*factor;
 				break;
 			case GLFW_KEY_RIGHT:
-				cameraPos -= glm::normalize(glm::cross(cameraFront,cameraUp))*cameraSpeed*factor;
+				if(!angryBird.pause)
+					cameraPos -= glm::normalize(glm::cross(cameraFront,cameraUp))*cameraSpeed*factor;
 				break;
 			case GLFW_KEY_UP:
-				if(fov<89)
-					fov=89;
-				if(fov>91)
-					fov=91;
-				if(fov>=89&&fov<=91)
-					fov-=0.1;
+				if(!angryBird.pause){
+					if(fov<89)
+						fov=89;
+					if(fov>91)
+						fov=91;
+					if(fov>=89&&fov<=91)
+						fov-=0.1;
+				}
 				break;
 			case GLFW_KEY_DOWN:
-				if(fov<89)
-					fov=89;
-				if(fov>91)
-					fov=91;
-				if(fov>=89&&fov<=91)
-					fov+=0.1;
+				if(!angryBird.pause){
+					if(fov<89)
+						fov=89;
+					if(fov>91)
+						fov=91;
+					if(fov>=89&&fov<=91)
+						fov+=0.1;
+				}
 				break;
 			case GLFW_KEY_P:
 				on=!on;
@@ -2442,6 +2503,9 @@ void initGL (GLFWwindow* window, int width, int height)
 	}
 
 	board.createBoard();
+	board.createBrownBoard();
+	board.createDarkRedCircle(0,-1,0);
+	board.createDarkRedCircle(1,1,0);
 	board.createRedCircle(0,-1,0);
 	board.createRedCircle(1,1,0);
 	board.createTriangle();
@@ -2616,6 +2680,8 @@ void initGL (GLFWwindow* window, int width, int height)
 	//cout << "GLSL: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
 }
 
+int num;
+
 void next_level(GLFWwindow* window, int width, int height){
 	int i;
 	goNext=false;
@@ -2632,6 +2698,7 @@ void next_level(GLFWwindow* window, int width, int height){
 
 	}
 	counter1=0;
+	num = rand()%400 + 200;
 	pauseGame(true);
 	board.levelUp=false;
 	goNext=false;
@@ -2654,6 +2721,7 @@ void new_game(GLFWwindow* window, int width, int height){
 
 	}
 	counter1=0;
+	num = rand()%400 + 200;
 	pauseGame(true);
 	board.levelUp=false;
 	goNext=false;
@@ -2664,7 +2732,7 @@ int main (int argc, char** argv)
 {
 	int width = 600;
 	int height = 600;
-	int i,j,k,num;
+	int i,j,k;
 	stringstream ss1,ss2;
 	string convStr1,convStr2,concatStr;
 	num = rand()%400 + 200;
@@ -2755,7 +2823,10 @@ int main (int argc, char** argv)
 		if(angryBird.getLives() <= 0){
 			pauseGame(false);
 			board.levelUp=true;
+			board.draw(-1);
 			board.draw(0);
+			board.draw(6);
+			board.draw(7);
 			board.draw(1);
 			board.draw(2);
 			board.draw(5);
@@ -2770,7 +2841,10 @@ int main (int argc, char** argv)
 		if(angryBird.hit == 7){
 			pauseGame(false);
 			board.levelUp=true;
+			board.draw(-1);
 			board.draw(0);
+			board.draw(6);
+			board.draw(7);
 			board.draw(1);
 			board.draw(2);
 			board.draw(3);
