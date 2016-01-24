@@ -204,7 +204,7 @@ void draw3DObject (struct VAO* vao)
 
 float gravity = 0.6,airDrag = 0.005,friction = 0.1,t=0,groundDrag = 0.5;
 float camera_rotation_angle = 90;
-int counter,counter1;
+int counter,counter1,counter2;
 bool twinkleOverride = false;
 int level=1;
 glm::vec3 cameraPos = glm::vec3(0.0f,0.0f,3.0f);
@@ -551,7 +551,7 @@ Border border[4];
 
 class Sun{
 	public:
-		VAO *sn[2];
+		VAO *sn[3];
 		float posx;
 		float posy;
 		float radius;
@@ -562,27 +562,46 @@ class Sun{
 			radius=1;
 		}
 
-		void createSun(){
+		void createSun(int index){
 			int numVertices = 360;
-			GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
-			for (int i=0; i<numVertices; i++) {
-				vertex_buffer_data [3*i] =  radius*cos(i*M_PI/180.0f);
-				vertex_buffer_data [3*i + 1] = radius*sin(i*M_PI/180.0f);
-				vertex_buffer_data [3*i + 2] = 0;
+			if(index==0){
+				GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
+				for (int i=0; i<numVertices; i++) {
+					vertex_buffer_data [3*i] =  radius*cos(i*M_PI/180.0f);
+					vertex_buffer_data [3*i + 1] = radius*sin(i*M_PI/180.0f);
+					vertex_buffer_data [3*i + 2] = 0;
+				}
+
+
+				GLfloat* color_buffer_data = new GLfloat [3*numVertices];
+				for (int i=0; i<numVertices; i++) {
+					color_buffer_data [3*i] = 1;
+					color_buffer_data [3*i + 1] = 0.65;
+					color_buffer_data [3*i + 2] = 0;
+				}
+
+
+				sn[0] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
 			}
+			if(index==2){
+				GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
+				for (int i=0; i<numVertices; i++) {
+					vertex_buffer_data [3*i] =  radius*cos(i*M_PI/180.0f);
+					vertex_buffer_data [3*i + 1] = radius*sin(i*M_PI/180.0f);
+					vertex_buffer_data [3*i + 2] = 0;
+				}
 
 
-			GLfloat* color_buffer_data = new GLfloat [3*numVertices];
-			for (int i=0; i<numVertices; i++) {
-				color_buffer_data [3*i] = 1;
-				color_buffer_data [3*i + 1] = 0.65;
-				color_buffer_data [3*i + 2] = 0;
+				GLfloat* color_buffer_data = new GLfloat [3*numVertices];
+				for (int i=0; i<numVertices; i++) {
+					color_buffer_data [3*i] = 0.3;
+					color_buffer_data [3*i + 1] = 0.5;
+					color_buffer_data [3*i + 2] = 0.7;
+				}
+
+
+				sn[2] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
 			}
-
-
-			// create3DObject creates and returns a handle to a VAO that can be used later
-			sn[0] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
-
 		}
 
 		void createRays(){
@@ -1723,6 +1742,7 @@ class Bird{
 	bool isMoving; 
 	float radius;
 	public:
+	bool immune;
 	bool pause;
 	int hit;
 	bool allowed;
@@ -1738,6 +1758,7 @@ class Bird{
 	int dir;
 	VAO *bird,*saucer;
 	Bird(){
+		immune=false;
 		lives = 3;
 		score = 0;
 		allowed=true;
@@ -1833,6 +1854,7 @@ class Bird{
 		lives--;
 		isMoving = !isMoving;
 		floor = false;
+		immune = false;
 		flag = true;
 		dir = 1;
 	}
@@ -1943,6 +1965,7 @@ class Bird{
 		cy = comet.center[1];
 		if(sqrt(pow((center[0]-cx),2)+pow((center[1]-cy),2))<=(radius + 0.1)){
 			setLives(getLives() + 1);
+			immune=true;
 			comet.show=false;
 			comet.posx = 5;
 			comet.center[0] = comet.posx;
@@ -2002,10 +2025,12 @@ class Bird{
 		float r;
 		cx = varys[0].center[0];
 		cy = varys[0].center[1];
-		if(sqrt(pow((center[0]-cx),2)+pow((center[1]-cy),2))<=(radius + 0.2)){
-			setScore(getScore() - (10*level));	
-			reset();
+		if(!immune){
+			if(sqrt(pow((center[0]-cx),2)+pow((center[1]-cy),2))<=(radius + 0.2)){
+				setScore(getScore() - (10*level));	
+				reset();
 
+			}
 		}
 
 	}
@@ -2637,7 +2662,8 @@ void initGL (GLFWwindow* window, int width, int height)
 		heart[i].createLeft(1);
 		heart[i].createRight(2);
 	}
-	sun.createSun();
+	sun.createSun(0);
+	sun.createSun(2);
 	sun.createRays();
 	comet.show = false;
 	comet.posy = rand()%5 - 2;
@@ -2698,6 +2724,7 @@ void next_level(GLFWwindow* window, int width, int height){
 
 	}
 	counter1=0;
+	counter2=0;
 	num = rand()%400 + 200;
 	pauseGame(true);
 	board.levelUp=false;
@@ -2721,6 +2748,7 @@ void new_game(GLFWwindow* window, int width, int height){
 
 	}
 	counter1=0;
+	counter2=0;
 	num = rand()%400 + 200;
 	pauseGame(true);
 	board.levelUp=false;
@@ -2758,7 +2786,10 @@ int main (int argc, char** argv)
 		glfwSetWindowTitle(window,gameTitle);
 		bg.draw();
 		sun.draw(0);
-		sun.draw(1);
+		if(!angryBird.immune)
+			sun.draw(1);
+		if(angryBird.immune)
+			sun.draw(2);
 		border[0].draw(0);
 		border[1].draw(2);
 		border[2].draw(1);
