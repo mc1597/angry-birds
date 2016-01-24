@@ -225,162 +225,162 @@ Background bg;
 
 class Board{
 	public:
-	VAO *brd,*cir[2],*tri,*cross[2];
-	bool levelUp;
-	float radius;
-	Board(){
-		levelUp = false;
-		radius = 0.6;
-	}
-
-	void createBoard(){
-		static const GLfloat vertex_buffer_data [] = {
-                                2,2,0, // vertex 1
-                                2,-2,0, // vertex 2
-                                -2,-2,0, // vertex 3
-
-                                -2,-2,0, // vertex 3
-                                -2,2,0, // vertex 4
-                                2,2,0, // vertex 1
-                        };
-
-                        static const GLfloat color_buffer_data [] = {
-				1,0.5,0,
-				1,0.5,0,
-				1,0.5,0,
-
-				1,0.5,0,
-				1,0.5,0,
-				1,0.5,0,
-                        };
-
-                        brd = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
-
-	}
-
-	void createRedCircle(int index,float cx,float cy){
-
-		 int numVertices = 360;
-                        GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
-                        for (int i=0; i<numVertices; i++) {
-                                vertex_buffer_data [3*i] = cx + radius*cos(i*M_PI/180.0f);
-                                vertex_buffer_data [3*i + 1] = cy + radius*sin(i*M_PI/180.0f);
-                                vertex_buffer_data [3*i + 2] = 0;
-                        }
-
-
-                        GLfloat* color_buffer_data = new GLfloat [3*numVertices];
-                        for (int i=0; i<numVertices; i++) {
-                                color_buffer_data [3*i] = 1;
-                                color_buffer_data [3*i + 1] = 0;
-                                color_buffer_data [3*i + 2] = 0;
-                        }
-
-
-                        // create3DObject creates and returns a handle to a VAO that can be used later
-                        cir[index] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
-
-	}
-
-
-	void createCross(int index){
-
-       static const GLfloat vertex_buffer_data [] = {
-			0.58,0.04,0,
-			0.58,-0.04,0,
-			-0.62,-0.04,0,
-
-			-0.62,-0.04,0,
-			-0.62,0.04,0,
-			0.58,0.04,0,
-			
-			0.04,0.58,0,
-			-0.04,0.58,0,
-			-0.04,-0.58,0,
-
-			-0.04,-0.58,0,
-			0.04,-0.58,0,
-			0.04,0.58,0,
-			
-                        };
-
-                        static const GLfloat color_buffer_data [] = {
-				1,1,1,
-				1,1,1,
-				1,1,1,
-
-				1,1,1,
-				1,1,1,
-				1,1,1,
-
-				1,1,1,
-				1,1,1,
-				1,1,1,
-
-				1,1,1,
-				1,1,1,
-				1,1,1,
-
-                        };
-
-                        cross[index] = create3DObject(GL_TRIANGLES, 12, vertex_buffer_data, color_buffer_data, GL_FILL);
-
-	}
-	void createTriangle(){
-
-       static const GLfloat vertex_buffer_data [] = {
-                                -0.4,0,0, // vertex 1
-                                -1.2,0.58,0, // vertex 2
-                                -1.2,-0.58,0, // vertex 3
-
-                        };
-
-                        static const GLfloat color_buffer_data [] = {
-				1,1,1,
-				1,1,1,
-				1,1,1,
-
-                        };
-
-                        tri = create3DObject(GL_TRIANGLES, 3, vertex_buffer_data, color_buffer_data, GL_FILL);
-
-
-	}
-
-	void draw(int index){
-		Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
-                glm::mat4 VP = Matrices.projection * Matrices.view;
-                glm::mat4 MVP;  // MVP = Projection * View * Model
-                Matrices.model = glm::mat4(1.0f);
-		if(index==4){
-		glm::mat4 translateCr = glm::translate(glm::vec3(1,0,0));
-		glm::mat4 rotateCr = glm::rotate((float)(45*M_PI/180.0f), glm::vec3(0,0,1));
-
-		Matrices.model *= (translateCr*rotateCr);
-		}
-		if(index==5){
-		glm::mat4 translateCr = glm::translate(glm::vec3(-1,0,0));
-
-		Matrices.model *= (translateCr);
+		VAO *brd,*cir[2],*tri,*cross[2];
+		bool levelUp;
+		float radius;
+		Board(){
+			levelUp = false;
+			radius = 0.6;
 		}
 
-		MVP = VP * Matrices.model;
-		glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
-		if(index==0)
-			draw3DObject(brd);
-		if(index==1)
-			draw3DObject(cir[0]);
-		if(index==2)
-			draw3DObject(cir[1]);
-		if(index==3)
-			draw3DObject(tri);
-		if(index==4)
-			draw3DObject(cross[0]);
-		if(index==5)
-			draw3DObject(cross[1]);
-			
-			
-	}
+		void createBoard(){
+			static const GLfloat vertex_buffer_data [] = {
+				2,2,0, // vertex 1
+				2,-2,0, // vertex 2
+				-2,-2,0, // vertex 3
+
+				-2,-2,0, // vertex 3
+				-2,2,0, // vertex 4
+				2,2,0, // vertex 1
+			};
+
+			static const GLfloat color_buffer_data [] = {
+				1,0.5,0,
+				1,0.5,0,
+				1,0.5,0,
+
+				1,0.5,0,
+				1,0.5,0,
+				1,0.5,0,
+			};
+
+			brd = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
+
+		}
+
+		void createRedCircle(int index,float cx,float cy){
+
+			int numVertices = 360;
+			GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
+			for (int i=0; i<numVertices; i++) {
+				vertex_buffer_data [3*i] = cx + radius*cos(i*M_PI/180.0f);
+				vertex_buffer_data [3*i + 1] = cy + radius*sin(i*M_PI/180.0f);
+				vertex_buffer_data [3*i + 2] = 0;
+			}
+
+
+			GLfloat* color_buffer_data = new GLfloat [3*numVertices];
+			for (int i=0; i<numVertices; i++) {
+				color_buffer_data [3*i] = 1;
+				color_buffer_data [3*i + 1] = 0;
+				color_buffer_data [3*i + 2] = 0;
+			}
+
+
+			// create3DObject creates and returns a handle to a VAO that can be used later
+			cir[index] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
+
+		}
+
+
+		void createCross(int index){
+
+			static const GLfloat vertex_buffer_data [] = {
+				0.58,0.04,0,
+				0.58,-0.04,0,
+				-0.62,-0.04,0,
+
+				-0.62,-0.04,0,
+				-0.62,0.04,0,
+				0.58,0.04,0,
+
+				0.04,0.58,0,
+				-0.04,0.58,0,
+				-0.04,-0.58,0,
+
+				-0.04,-0.58,0,
+				0.04,-0.58,0,
+				0.04,0.58,0,
+
+			};
+
+			static const GLfloat color_buffer_data [] = {
+				1,1,1,
+				1,1,1,
+				1,1,1,
+
+				1,1,1,
+				1,1,1,
+				1,1,1,
+
+				1,1,1,
+				1,1,1,
+				1,1,1,
+
+				1,1,1,
+				1,1,1,
+				1,1,1,
+
+			};
+
+			cross[index] = create3DObject(GL_TRIANGLES, 12, vertex_buffer_data, color_buffer_data, GL_FILL);
+
+		}
+		void createTriangle(){
+
+			static const GLfloat vertex_buffer_data [] = {
+				-0.4,0,0, // vertex 1
+				-1.2,0.58,0, // vertex 2
+				-1.2,-0.58,0, // vertex 3
+
+			};
+
+			static const GLfloat color_buffer_data [] = {
+				1,1,1,
+				1,1,1,
+				1,1,1,
+
+			};
+
+			tri = create3DObject(GL_TRIANGLES, 3, vertex_buffer_data, color_buffer_data, GL_FILL);
+
+
+		}
+
+		void draw(int index){
+			Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
+			glm::mat4 VP = Matrices.projection * Matrices.view;
+			glm::mat4 MVP;  // MVP = Projection * View * Model
+			Matrices.model = glm::mat4(1.0f);
+			if(index==4){
+				glm::mat4 translateCr = glm::translate(glm::vec3(1,0,0));
+				glm::mat4 rotateCr = glm::rotate((float)(45*M_PI/180.0f), glm::vec3(0,0,1));
+
+				Matrices.model *= (translateCr*rotateCr);
+			}
+			if(index==5){
+				glm::mat4 translateCr = glm::translate(glm::vec3(-1,0,0));
+
+				Matrices.model *= (translateCr);
+			}
+
+			MVP = VP * Matrices.model;
+			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+			if(index==0)
+				draw3DObject(brd);
+			if(index==1)
+				draw3DObject(cir[0]);
+			if(index==2)
+				draw3DObject(cir[1]);
+			if(index==3)
+				draw3DObject(tri);
+			if(index==4)
+				draw3DObject(cross[0]);
+			if(index==5)
+				draw3DObject(cross[1]);
+
+
+		}
 };
 
 Board board;
@@ -2279,9 +2279,9 @@ double slope;
 double mouse_X,mouse_Y;
 void mouse_callback(GLFWwindow* window,double x,double y){
 	if(!angryBird.pause){
-	double bird_x=38.0f,bird_y=300.0f;
-	slope = atan((y-bird_y)/(x-bird_x));
-	slope = (-1*slope*180.0/M_PI)+20;
+		double bird_x=38.0f,bird_y=300.0f;
+		slope = atan((y-bird_y)/(x-bird_x));
+		slope = (-1*slope*180.0/M_PI)+20;
 	}
 
 	mouse_X = x;
@@ -2292,14 +2292,16 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
 	switch (button) {
 		case GLFW_MOUSE_BUTTON_LEFT:
 			if (action == GLFW_PRESS){
-				if(mouse_X>180&&mouse_X<270&&mouse_Y>250&&mouse_Y<340)
-					goNext = true;
-				if(mouse_X>330&&mouse_X<420&&mouse_Y>250&&mouse_Y<340){
-					cout << "Your score: " << angryBird.getScore() << endl;
-					cout << "LEVEL: " << level << endl;
-					quit(window);
+				if(board.levelUp){
+					if(mouse_X>180&&mouse_X<270&&mouse_Y>250&&mouse_Y<340)
+						goNext = true;
+					if(mouse_X>330&&mouse_X<420&&mouse_Y>250&&mouse_Y<340){
+						cout << "Your score: " << angryBird.getScore() << endl;
+						cout << "LEVEL: " << level << endl;
+						quit(window);
+					}
 				}
-		
+
 			}
 			break;
 			if (action == GLFW_RELEASE)
@@ -2307,7 +2309,7 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
 			break;
 		case GLFW_MOUSE_BUTTON_RIGHT:
 			if (action == GLFW_PRESS) {
-				if(!angryBird.pause)
+				if(!angryBird.pause&&!angryBird.getStatus())
 					angryBird.setAngle(slope);
 				//rectangle_rot_dir *= -1;
 			}
@@ -2595,11 +2597,12 @@ void initGL (GLFWwindow* window, int width, int height)
 	programID = LoadShaders( "Sample_GL.vert", "Sample_GL.frag" );
 	// Get a handle for our "MVP" uniform
 	Matrices.MatrixID = glGetUniformLocation(programID, "MVP");
-	
+
 
 	reshapeWindow (window, width, height);
 	goNext=false;
 	pressNext=false;
+	board.levelUp=false;
 	// Background color of the scene
 	glClearColor (0.0f, 0.2f, 0.4f, 1.0f); // R, G, B, A
 	glClearDepth (1.0f);
@@ -2636,24 +2639,24 @@ void next_level(GLFWwindow* window, int width, int height){
 }
 
 void new_game(GLFWwindow* window, int width, int height){
-        int i;
-        goNext=false;
-        angryBird.setScore(0);
-        angryBird.reset();
-        angryBird.setStatus(false);
-        angryBird.setLives(3);
-        angryBird.hit=0;
-        level=1;
-        initGL (window, width, height);
-        for(i=0;i<7;i++){
-                target[i].shrink=false;
-                target[i].scaleFactor=1;
+	int i;
+	goNext=false;
+	angryBird.setScore(0);
+	angryBird.reset();
+	angryBird.setStatus(false);
+	angryBird.setLives(3);
+	angryBird.hit=0;
+	level=1;
+	initGL (window, width, height);
+	for(i=0;i<7;i++){
+		target[i].shrink=false;
+		target[i].scaleFactor=1;
 
-        }
-        counter1=0;
-        pauseGame(true);
-        board.levelUp=false;
-        goNext=false;
+	}
+	counter1=0;
+	pauseGame(true);
+	board.levelUp=false;
+	goNext=false;
 
 }
 
@@ -2757,6 +2760,7 @@ int main (int argc, char** argv)
 			board.draw(2);
 			board.draw(5);
 			board.draw(4);
+			glClearColor (0.34f, 0.34f, 0.34f, 1.0f); // R, G, B, A
 			if(goNext&&board.levelUp){
 				goNext=false;
 				new_game(window, width, height);
@@ -2771,6 +2775,7 @@ int main (int argc, char** argv)
 			board.draw(2);
 			board.draw(3);
 			board.draw(4);
+			glClearColor (0.34f, 0.34f, 0.34f, 1.0f); // R, G, B, A
 			if(goNext&&board.levelUp){
 				goNext=false;
 				next_level(window, width, height);
