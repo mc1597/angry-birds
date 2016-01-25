@@ -563,10 +563,10 @@ class Sun{
 		}
 
 		void createSun(int index){
-			int numVertices = 360;
+			int i,numVertices = 360;
 			if(index==0){
 				GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
-				for (int i=0; i<numVertices; i++) {
+				for (i=0; i<numVertices; i++) {
 					vertex_buffer_data [3*i] =  radius*cos(i*M_PI/180.0f);
 					vertex_buffer_data [3*i + 1] = radius*sin(i*M_PI/180.0f);
 					vertex_buffer_data [3*i + 2] = 0;
@@ -574,10 +574,19 @@ class Sun{
 
 
 				GLfloat* color_buffer_data = new GLfloat [3*numVertices];
-				for (int i=0; i<numVertices; i++) {
+				for (i=0; i<numVertices; i++) {
+					if(i<25){	
+					color_buffer_data [3*i] = 1;
+					color_buffer_data [3*i + 1] = 0;
+					color_buffer_data [3*i + 2] = 0;
+					}
+					else{
+
 					color_buffer_data [3*i] = 1;
 					color_buffer_data [3*i + 1] = 0.65;
 					color_buffer_data [3*i + 2] = 0;
+					
+					}
 				}
 
 
@@ -585,7 +594,7 @@ class Sun{
 			}
 			if(index==2){
 				GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
-				for (int i=0; i<numVertices; i++) {
+				for (i=0; i<numVertices; i++) {
 					vertex_buffer_data [3*i] =  radius*cos(i*M_PI/180.0f);
 					vertex_buffer_data [3*i + 1] = radius*sin(i*M_PI/180.0f);
 					vertex_buffer_data [3*i + 2] = 0;
@@ -593,10 +602,17 @@ class Sun{
 
 
 				GLfloat* color_buffer_data = new GLfloat [3*numVertices];
-				for (int i=0; i<numVertices; i++) {
+				for (i=0; i<numVertices; i++){
+					if(i%4!=0){
 					color_buffer_data [3*i] = 0.3;
 					color_buffer_data [3*i + 1] = 0.5;
 					color_buffer_data [3*i + 2] = 0.7;
+					}
+					else{
+					color_buffer_data [3*i] = 0.8;
+					color_buffer_data [3*i + 1] = 0.9;
+					color_buffer_data [3*i + 2] = 1;
+					}
 				}
 
 
@@ -747,11 +763,11 @@ class Portal{
 		}
 
 		void create(int index){
-			int numVertices = 360;
+			int i,numVertices = 360;
 
 			if(index==0){
 				GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
-				for (int i=0; i<numVertices; i++) {
+				for (i=0; i<numVertices; i++) {
 					vertex_buffer_data [3*i] =  radius*cos(i*M_PI/180.0f);
 					vertex_buffer_data [3*i + 1] =  radius*sin(i*M_PI/180.0f);
 					vertex_buffer_data [3*i + 2] = 0;
@@ -759,10 +775,17 @@ class Portal{
 
 
 				GLfloat* color_buffer_data = new GLfloat [3*numVertices];
-				for (int i=0; i<numVertices; i++) {
+				for (i=0; i<numVertices; i++) {
+					if(i%4==0){
 					color_buffer_data [3*i] = 1;
 					color_buffer_data [3*i + 1] = 1;
 					color_buffer_data [3*i + 2] = 1;
+					}
+					else{
+					color_buffer_data [3*i] = 0.8;
+					color_buffer_data [3*i + 1] = 1;
+					color_buffer_data [3*i + 2] = 1;
+					}
 				}
 
 
@@ -771,7 +794,7 @@ class Portal{
 			}
 			else{
 				GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
-				for (int i=0; i<numVertices; i++) {
+				for (i=0; i<numVertices; i++) {
 					vertex_buffer_data [3*i] =  radius*cos(i*M_PI/180.0f);
 					vertex_buffer_data [3*i + 1] =  radius*sin(i*M_PI/180.0f);
 					vertex_buffer_data [3*i + 2] = 0;
@@ -779,7 +802,7 @@ class Portal{
 
 
 				GLfloat* color_buffer_data = new GLfloat [3*numVertices];
-				for (int i=0; i<numVertices; i++) {
+				for (i=0; i<numVertices; i++) {
 					color_buffer_data [3*i] = 1;
 					color_buffer_data [3*i + 1] = 0;
 					color_buffer_data [3*i + 2] = 0;
@@ -913,64 +936,6 @@ class Heart{
 };
 
 Heart heart[4];
-class Light{
-
-	public:
-		VAO *li[90];
-		float posx;
-		float posy;
-		float radius;
-
-		Light(){
-			posx=0;
-			posy=0;
-			radius=0.05;
-		}
-
-		void create(int index)
-		{
-
-			int numVertices = 360;
-			GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
-			for (int i=0; i<numVertices; i++) {
-				vertex_buffer_data [3*i] = radius*cos(i*M_PI/180.0f);
-				vertex_buffer_data [3*i + 1] = radius*sin(i*M_PI/180.0f);
-				vertex_buffer_data [3*i + 2] = 0;
-			}
-
-
-			GLfloat* color_buffer_data = new GLfloat [3*numVertices];
-			for (int i=0; i<numVertices; i++) {
-				color_buffer_data [3*i] = 1;
-				color_buffer_data [3*i + 1] = 1;
-				color_buffer_data [3*i + 2] = 1;
-			}
-
-
-			// create3DObject creates and returns a handle to a VAO that can be used later
-			li[index] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
-		}
-
-		void draw(int index){
-			Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
-			glm::mat4 VP = Matrices.projection * Matrices.view;
-			glm::mat4 MVP;  // MVP = Projection * View * Model
-			Matrices.model = glm::mat4(1.0f);
-
-			Matrices.model = glm::mat4(1.0f);
-
-			glm::mat4 translateLt = glm::translate (glm::vec3(posx, posy, 0));
-			Matrices.model *= (translateLt);
-			MVP = VP * Matrices.model;
-			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
-			draw3DObject(li[index]);
-
-
-		}
-
-};
-
-Light light[30];
 
 class Star{
 
@@ -1623,6 +1588,81 @@ class Comet{
 };
 
 Comet comet;
+
+
+class Light{
+
+	public:
+		VAO *li;
+		float posx;
+		float posy;
+		float center[2];
+		float radius;
+		bool show;
+		bool pause;
+		float angle;
+
+		Light(){
+			posx=0;
+			posy=0;
+			radius=0.05;
+			center[0] = posx;
+			center[1] = posy;
+			show = true;
+			pause = false;
+			angle = 0;
+		}
+
+		void create()
+		{
+			
+			int numVertices = 360;
+			GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
+			for (int i=0; i<numVertices; i++) {
+				vertex_buffer_data [3*i] = radius*cos(i*M_PI/180.0f);
+				vertex_buffer_data [3*i + 1] = radius*sin(i*M_PI/180.0f);
+				vertex_buffer_data [3*i + 2] = 0;
+			}
+
+
+			GLfloat* color_buffer_data = new GLfloat [3*numVertices];
+			for (int i=0; i<numVertices; i++) {
+				color_buffer_data [3*i] = 1;
+				color_buffer_data [3*i + 1] = 1;
+				color_buffer_data [3*i + 2] = 0;
+			}
+
+
+			li = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
+		}
+
+		void draw(){
+			Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
+			glm::mat4 VP = Matrices.projection * Matrices.view;
+			glm::mat4 MVP;  // MVP = Projection * View * Model
+			Matrices.model = glm::mat4(1.0f);
+
+			Matrices.model = glm::mat4(1.0f);
+
+			glm::mat4 translateLt1 = glm::translate (glm::vec3(0, 0, 0));
+			glm::mat4 translateLt2 = glm::translate (glm::vec3(posx, posy, 0));
+			glm::mat4 rotateLt = glm::rotate((float)(angle*M_PI/180.0f), glm::vec3(0,1,0));
+			center[0] = posx;
+			center[1] = posy;
+			if(!pause)
+				angle+=2;
+			Matrices.model *= (translateLt2 * rotateLt);
+			MVP = VP * Matrices.model;
+			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+			draw3DObject(li);
+
+
+		}
+
+};
+
+Light light[30];
+
 float obstacle_rotation = 0;
 class Obstacle{
 	float posx;
@@ -1632,7 +1672,7 @@ class Obstacle{
 	float radius;
 	bool collided;
 	public:
-	VAO *obs;
+	VAO *obs[3];
 	bool pause;
 	Obstacle(){
 		posx = 2;
@@ -1682,12 +1722,12 @@ class Obstacle{
 		radius = r;
 	}
 
-	void create()
+	void createBig()
 	{
 
-		int numVertices = 72;
+		int numVertices = 72,i;
 		GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
-		for (int i=0; i<numVertices; i++) {
+		for (i=0; i<numVertices; i++) {
 			vertex_buffer_data [3*i] = radius*cos((72*i)*M_PI/180.0f);
 			vertex_buffer_data [3*i + 1] = radius*sin((72*i)*M_PI/180.0f);
 			vertex_buffer_data [3*i + 2] = 0;
@@ -1695,18 +1735,82 @@ class Obstacle{
 
 
 		GLfloat* color_buffer_data = new GLfloat [3*numVertices];
-		for (int i=0; i<numVertices; i++) {
+		for (i=0; i<numVertices; i++) {
+			if(i%3!=0){
 			color_buffer_data [3*i] = 0.5;
 			color_buffer_data [3*i + 1] = 0.5;
 			color_buffer_data [3*i + 2] = 0.5;
+			}
+			else{
+			color_buffer_data [3*i] = 0.3;
+			color_buffer_data [3*i + 1] = 0.3;
+			color_buffer_data [3*i + 2] = 0.3;
+			}
 		}
 
+		obs[0] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
 
-		// create3DObject creates and returns a handle to a VAO that can be used later
-		obs = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
+	}
+	void createSmall()
+	{
+
+		int numVertices = 72,i;
+		GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
+                for (i=0; i<numVertices; i++) {
+                        vertex_buffer_data [3*i] = 0.66*radius*cos((72*i)*M_PI/180.0f);
+                        vertex_buffer_data [3*i + 1] = 0.66*radius*sin((72*i)*M_PI/180.0f);
+                        vertex_buffer_data [3*i + 2] = 0;
+                }
+
+
+                GLfloat* color_buffer_data = new GLfloat [3*numVertices];
+                for (i=0; i<numVertices; i++) {
+                        if(i%3!=0){
+                        color_buffer_data [3*i] = 0.5;
+                        color_buffer_data [3*i + 1] = 0.5;
+                        color_buffer_data [3*i + 2] = 0.5;
+                        }
+                        else{
+                        color_buffer_data [3*i] = 0.3;
+                        color_buffer_data [3*i + 1] = 0.3;
+                        color_buffer_data [3*i + 2] = 0.3;
+                        }
+                }
+
+
+                // create3DObject creates and returns a handle to a VAO that can be used later
+                obs[1] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
+
+		GLfloat* vertex_buffer_data1 = new GLfloat [3*numVertices];
+                for (i=0; i<numVertices; i++) {
+                        vertex_buffer_data1 [3*i] = 0.33*radius*cos((72*i)*M_PI/180.0f);
+                        vertex_buffer_data1 [3*i + 1] = 0.33*radius*sin((72*i)*M_PI/180.0f);
+                        vertex_buffer_data1 [3*i + 2] = 0;
+                }
+
+
+                GLfloat* color_buffer_data1 = new GLfloat [3*numVertices];
+                for (i=0; i<numVertices; i++) {
+                        if(i%3!=0){
+                        color_buffer_data1 [3*i] = 0.5;
+                        color_buffer_data1 [3*i + 1] = 0.5;
+                        color_buffer_data1 [3*i + 2] = 0.5;
+                        }
+                        else{
+                        color_buffer_data1 [3*i] = 0.3;
+                        color_buffer_data1 [3*i + 1] = 0.3;
+                        color_buffer_data1 [3*i + 2] = 0.3;
+                        }
+                }
+
+
+                // create3DObject creates and returns a handle to a VAO that can be used later
+                obs[2] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data1, color_buffer_data1, GL_FILL);
+
+
 	}
 
-	void draw(){
+	void draw(int index){
 
 		Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
 		glm::mat4 VP = Matrices.projection * Matrices.view;
@@ -1718,11 +1822,11 @@ class Obstacle{
 		glm::mat4 translateObs = glm::translate (glm::vec3(posx, posy, 0));
 		glm::mat4 rotateObs = glm::rotate((float)(obstacle_rotation*M_PI/180.0f), glm::vec3(0,0,1));
 		Matrices.model *= (translateObs*rotateObs);
-		if(!pause)
-			obstacle_rotation+=0.5;
 		MVP = VP * Matrices.model;
+		if(!pause)
+			obstacle_rotation+=0.15;
 		glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
-		draw3DObject(obs);
+		draw3DObject(obs[index]);
 
 	}
 
@@ -1855,6 +1959,7 @@ class Bird{
 		isMoving = !isMoving;
 		floor = false;
 		immune = false;
+		counter2=0;
 		flag = true;
 		dir = 1;
 	}
@@ -1965,12 +2070,22 @@ class Bird{
 		cy = comet.center[1];
 		if(sqrt(pow((center[0]-cx),2)+pow((center[1]-cy),2))<=(radius + 0.1)){
 			setLives(getLives() + 1);
-			immune=true;
+			//immune=true;
 			comet.show=false;
 			comet.posx = 5;
 			comet.center[0] = comet.posx;
 		}
 
+	}
+	void checkLight(int i){
+		float cx,cy;
+		cx = light[i].center[0];
+		cy = light[i].center[1];
+		if(sqrt(pow((center[0]-cx),2)+pow((center[1]-cy),2))<=(radius + light[i].radius)){
+			immune=true;
+			light[i].show=false;
+			light[i].radius=0;
+		}
 	}
 
 	void checkPortal(){
@@ -2138,6 +2253,7 @@ class Bird{
 };
 Bird angryBird;
 
+
 class Point{
 	float posx;
 	float posy;
@@ -2240,6 +2356,8 @@ void pauseGame(bool play){
 			obstacle[i].pause=true;
 			target[i].pause=true;
 		}
+		for(i=0;i<2;i++)
+			light[i].pause=true;
 	}
 	else{
 		angryBird.pause=false;
@@ -2249,6 +2367,8 @@ void pauseGame(bool play){
 			obstacle[i].pause=false;
 			target[i].pause=false;
 		}
+		for(i=0;i<2;i++)
+			light[i].pause=false;
 	}
 }
 /**************************
@@ -2261,6 +2381,7 @@ GLfloat cameraSpeed = 3.0f * deltaTime;
 bool pressNext=false;
 bool goNext=false;
 bool on=true;
+double bird_x=38.0f,bird_y=300.0f;
 void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	// Function is called first on GLFW_PRESS.
@@ -2282,14 +2403,18 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 			case GLFW_KEY_SPACE:
 				angryBird.setStatus(!angryBird.getStatus()); 
 				break;
-			case GLFW_KEY_K:
-				if(angryBird.initY < 3.5)
+			case GLFW_KEY_UP:
+				if(angryBird.initY < 3.5){
 					angryBird.initY += 0.2; 
+					bird_y-=10;
+				}
 				angryBird.center[1] = angryBird.initY;			
 				break;
-			case GLFW_KEY_M:
-				if(angryBird.initY > -3.5)
+			case GLFW_KEY_DOWN:
+				if(angryBird.initY > -3.5){
 					angryBird.initY -= 0.2; 
+					bird_y+=10;
+				}
 				angryBird.center[1] = angryBird.initY;			
 				break;
 
@@ -2311,7 +2436,7 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 				if(!angryBird.pause)
 					cameraPos -= glm::normalize(glm::cross(cameraFront,cameraUp))*cameraSpeed*factor;
 				break;
-			case GLFW_KEY_UP:
+			case GLFW_KEY_K:
 				if(!angryBird.pause){
 					if(fov<89)
 						fov=89;
@@ -2321,7 +2446,7 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 						fov-=0.1;
 				}
 				break;
-			case GLFW_KEY_DOWN:
+			case GLFW_KEY_M:
 				if(!angryBird.pause){
 					if(fov<89)
 						fov=89;
@@ -2365,9 +2490,11 @@ double slope;
 double mouse_X,mouse_Y;
 void mouse_callback(GLFWwindow* window,double x,double y){
 	if(!angryBird.pause){
-		double bird_x=38.0f,bird_y=300.0f;
+		//cout << y << endl;
 		slope = atan((y-bird_y)/(x-bird_x));
 		slope = (-1*slope*180.0/M_PI)+20;
+		if(pressNext)
+			angryBird.setAngle(slope);
 	}
 
 	mouse_X = x;
@@ -2396,9 +2523,10 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
 		case GLFW_MOUSE_BUTTON_RIGHT:
 			if (action == GLFW_PRESS) {
 				if(!angryBird.pause&&!angryBird.getStatus())
-					angryBird.setAngle(slope);
-				//rectangle_rot_dir *= -1;
+					pressNext=true;
 			}
+			if (action == GLFW_RELEASE)
+				pressNext=false;
 			break;
 		default:
 			break;
@@ -2556,8 +2684,9 @@ void initGL (GLFWwindow* window, int width, int height)
 		obstacle[j].setX((float)((float)(rand()%7) + (-3.2f)));
 		obstacle[j].setY((float)((float)(rand()%7) + (-3.2f)));
 		obstacle[j].setCenter(obstacle[j].getX(),obstacle[j].getY());
-		obstacle[j].setRadius((float)((float)((rand()%25)+10)/100));
-		obstacle[j].create();		
+		obstacle[j].setRadius((float)((float)((rand()%20)+15)/100));
+		obstacle[j].createBig();		
+		obstacle[j].createSmall();		
 	}
 
 	for(j=0;j<39;j++){
@@ -2638,14 +2767,17 @@ void initGL (GLFWwindow* window, int width, int height)
 		}
 	}
 
-	/*for(j=0;j<29;j++){
+	for(j=0;j<2;j++){
 	//light[j].posx = (((j)-15)*0.25) + 0.25;
 	//light[j].posy = 3.0 + pow(-1,(j)%2)*0.25;
-	light[j].posx = ((float)((float)(rand()%7) + (-3.2f)));
-	light[j].posy = ((float)((float)(rand()%7) + (-3.2f)));
-	light[j].create(j);
-	}*/
-
+	light[j].posx = ((float)((float)(rand()%5) + (-2.5f)));
+	light[j].posy = ((float)((float)(rand()%5) + (-2.5f)));
+	light[j].radius = 0.05;
+	light[j].show = true;
+	light[j].create();
+	}
+	
+	
 	varys[0].createBody();
 	varys[0].createLegs();
 
@@ -2813,8 +2945,6 @@ int main (int argc, char** argv)
 				star[i].draw(i);
 		}
 
-		//	for(i=0;i<29;i++)
-		//		light[i].draw(i);
 		for(i=0;i<7;i++){
 			target[i].draw(0,0,0);
 			target[i].draw(1,0,-10);
@@ -2823,8 +2953,16 @@ int main (int argc, char** argv)
 			target[i].draw(2,1,10);
 			target[i].draw(3,0,180);
 		}
-		for(i=0;i<7;i++)
-			obstacle[i].draw();
+		for(i=0;i<7;i++){
+			obstacle[i].draw(0);
+			obstacle[i].draw(1);
+			obstacle[i].draw(2);
+
+			}
+		for(i=0;i<2;i++){
+			if(light[i].show)
+				light[i].draw();
+		}
 		varys[0].turn();	
 		varys[0].draw(0);
 		varys[0].draw(1);
@@ -2847,6 +2985,8 @@ int main (int argc, char** argv)
 				angryBird.checkCollision(i);
 			for(i=0;i<7;i++)
 				angryBird.checkObstacle(i);
+			for(i=0;i<2;i++)
+				angryBird.checkLight(i);
 			angryBird.checkVarys();
 			angryBird.checkRoof();
 			angryBird.checkPortal();
@@ -2912,6 +3052,13 @@ int main (int argc, char** argv)
 				comet.show=true;
 				comet.posx = 5;
 				comet.center[0] = comet.posx;
+			}
+			if(angryBird.immune&&!angryBird.pause){
+				counter2++;
+				if(counter2 == 250){
+					counter2 = 0;
+					angryBird.immune = false;
+				}
 			}
 		}
 	}
