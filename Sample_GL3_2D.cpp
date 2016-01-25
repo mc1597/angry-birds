@@ -576,16 +576,16 @@ class Sun{
 				GLfloat* color_buffer_data = new GLfloat [3*numVertices];
 				for (i=0; i<numVertices; i++) {
 					if(i<25){	
-					color_buffer_data [3*i] = 1;
-					color_buffer_data [3*i + 1] = 0;
-					color_buffer_data [3*i + 2] = 0;
+						color_buffer_data [3*i] = 1;
+						color_buffer_data [3*i + 1] = 0;
+						color_buffer_data [3*i + 2] = 0;
 					}
 					else{
 
-					color_buffer_data [3*i] = 1;
-					color_buffer_data [3*i + 1] = 0.65;
-					color_buffer_data [3*i + 2] = 0;
-					
+						color_buffer_data [3*i] = 1;
+						color_buffer_data [3*i + 1] = 0.65;
+						color_buffer_data [3*i + 2] = 0;
+
 					}
 				}
 
@@ -604,14 +604,14 @@ class Sun{
 				GLfloat* color_buffer_data = new GLfloat [3*numVertices];
 				for (i=0; i<numVertices; i++){
 					if(i%4!=0){
-					color_buffer_data [3*i] = 0.3;
-					color_buffer_data [3*i + 1] = 0.5;
-					color_buffer_data [3*i + 2] = 0.7;
+						color_buffer_data [3*i] = 0.1;
+						color_buffer_data [3*i + 1] = 0.2;
+						color_buffer_data [3*i + 2] = 0.9;
 					}
 					else{
-					color_buffer_data [3*i] = 0.8;
-					color_buffer_data [3*i + 1] = 0.9;
-					color_buffer_data [3*i + 2] = 1;
+						color_buffer_data [3*i] = 0.8;
+						color_buffer_data [3*i + 1] = 0.9;
+						color_buffer_data [3*i + 2] = 1;
 					}
 				}
 
@@ -749,7 +749,7 @@ Sun sun;
 class Portal{
 
 	public:
-		VAO *por;
+		VAO *por,*layer[5];
 		float posx;
 		float posy;
 		float radius;
@@ -777,20 +777,118 @@ class Portal{
 				GLfloat* color_buffer_data = new GLfloat [3*numVertices];
 				for (i=0; i<numVertices; i++) {
 					if(i%4==0){
-					color_buffer_data [3*i] = 1;
-					color_buffer_data [3*i + 1] = 1;
-					color_buffer_data [3*i + 2] = 1;
+						color_buffer_data [3*i] = 1;
+						color_buffer_data [3*i + 1] = 1;
+						color_buffer_data [3*i + 2] = 1;
 					}
 					else{
-					color_buffer_data [3*i] = 0.8;
-					color_buffer_data [3*i + 1] = 1;
-					color_buffer_data [3*i + 2] = 1;
+						color_buffer_data [3*i] = 0.2;
+						color_buffer_data [3*i + 1] = 0.7;
+						color_buffer_data [3*i + 2] = 1;
 					}
 				}
 
+				layer[0] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
 
-				// create3DObject creates and returns a handle to a VAO that can be used later
-				por = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
+				GLfloat* vertex_buffer_data1 = new GLfloat [3*numVertices];
+				for (i=0; i<numVertices; i++) {
+					vertex_buffer_data1 [3*i] =  0.8*radius*cos(i*M_PI/180.0f);
+					vertex_buffer_data1 [3*i + 1] =  0.8*radius*sin(i*M_PI/180.0f);
+					vertex_buffer_data1 [3*i + 2] = 0;
+				}
+
+
+				GLfloat* color_buffer_data1 = new GLfloat [3*numVertices];
+				for (i=0; i<numVertices; i++) {
+					if(i%4==0){
+						color_buffer_data1 [3*i] = 0.6;
+						color_buffer_data1 [3*i + 1] = 1;
+						color_buffer_data1 [3*i + 2] = 1;
+					}
+					else{
+						color_buffer_data1 [3*i] = 0.3;
+						color_buffer_data1 [3*i + 1] = 0.6;
+						color_buffer_data1 [3*i + 2] = 1;
+					}
+				}
+
+				layer[1] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data1, color_buffer_data1, GL_FILL);
+
+
+				GLfloat* vertex_buffer_data3 = new GLfloat [3*numVertices];
+				for (i=0; i<numVertices; i++) {
+					vertex_buffer_data3 [3*i] =  0.6*radius*cos(i*M_PI/180.0f);
+					vertex_buffer_data3 [3*i + 1] =  0.6*radius*sin(i*M_PI/180.0f);
+					vertex_buffer_data3 [3*i + 2] = 0;
+				}
+
+
+				GLfloat* color_buffer_data3 = new GLfloat [3*numVertices];
+				for (i=0; i<numVertices; i++) {
+					if(i%4==0){
+						color_buffer_data3 [3*i] = 0.6;
+						color_buffer_data3 [3*i + 1] = 1;
+						color_buffer_data3 [3*i + 2] = 1;
+					}
+					else{
+						color_buffer_data3 [3*i] = 0;
+						color_buffer_data3 [3*i + 1] = 0.5;
+						color_buffer_data3 [3*i + 2] = 0.8;
+					}
+				}
+
+				layer[2] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data3, color_buffer_data3, GL_FILL);
+
+				GLfloat* vertex_buffer_data2 = new GLfloat [3*numVertices];
+				for (i=0; i<numVertices; i++) {
+					vertex_buffer_data2 [3*i] =  0.4*radius*cos(i*M_PI/180.0f);
+					vertex_buffer_data2 [3*i + 1] =  0.4*radius*sin(i*M_PI/180.0f);
+					vertex_buffer_data2 [3*i + 2] = 0;
+				}
+
+
+				GLfloat* color_buffer_data2 = new GLfloat [3*numVertices];
+				for (i=0; i<numVertices; i++) {
+					if(i%4==0){
+						color_buffer_data2 [3*i] = 1;
+						color_buffer_data2 [3*i + 1] = 1;
+						color_buffer_data2 [3*i + 2] = 1;
+					}
+					else{
+						color_buffer_data2 [3*i] = 0;
+						color_buffer_data2 [3*i + 1] = 0.3;
+						color_buffer_data2 [3*i + 2] = 1;
+					}
+				}
+
+				layer[3] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data2, color_buffer_data2, GL_FILL);
+
+
+				GLfloat* vertex_buffer_data4 = new GLfloat [3*numVertices];
+				for (i=0; i<numVertices; i++) {
+					vertex_buffer_data4 [3*i] =  0.2*radius*cos(i*M_PI/180.0f);
+					vertex_buffer_data4 [3*i + 1] =  0.2*radius*sin(i*M_PI/180.0f);
+					vertex_buffer_data4 [3*i + 2] = 0;
+				}
+
+
+				GLfloat* color_buffer_data4 = new GLfloat [3*numVertices];
+				for (i=0; i<numVertices; i++) {
+					if(i%6==0){
+						color_buffer_data4 [3*i] = 0;
+						color_buffer_data4 [3*i + 1] = 0;
+						color_buffer_data4 [3*i + 2] = 1;
+					}
+					else{
+						color_buffer_data [3*i] = 0;
+						color_buffer_data [3*i + 1] = 0;
+						color_buffer_data [3*i + 2] = 0.6;
+					}
+				}
+
+				layer[4] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data4, color_buffer_data4, GL_FILL);
+
+
 			}
 			else{
 				GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
@@ -803,9 +901,16 @@ class Portal{
 
 				GLfloat* color_buffer_data = new GLfloat [3*numVertices];
 				for (i=0; i<numVertices; i++) {
+					if(i%4!=3){
+					color_buffer_data [3*i] = 0.5;
+					color_buffer_data [3*i + 1] = 0.5;
+					color_buffer_data [3*i + 2] = 0.5;
+					}
+					else{
 					color_buffer_data [3*i] = 1;
-					color_buffer_data [3*i + 1] = 0;
-					color_buffer_data [3*i + 2] = 0;
+					color_buffer_data [3*i + 1] = 1;
+					color_buffer_data [3*i + 2] = 1;
+					}
 				}
 
 
@@ -815,7 +920,7 @@ class Portal{
 			}
 		}
 
-		void draw(){
+		void draw(int index,int num){
 			Matrices.view = glm::lookAt(cameraPos,cameraPos+cameraFront,cameraUp);
 			glm::mat4 VP = Matrices.projection * Matrices.view;
 			glm::mat4 MVP;  // MVP = Projection * View * Model
@@ -829,7 +934,10 @@ class Portal{
 			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 			center[0]=posx;
 			center[1]=posy;
-			draw3DObject(por);
+			if(index==1)
+				draw3DObject(por);
+			else
+				draw3DObject(layer[num]);
 
 
 		}
@@ -1615,7 +1723,7 @@ class Light{
 
 		void create()
 		{
-			
+
 			int numVertices = 360;
 			GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
 			for (int i=0; i<numVertices; i++) {
@@ -1737,14 +1845,14 @@ class Obstacle{
 		GLfloat* color_buffer_data = new GLfloat [3*numVertices];
 		for (i=0; i<numVertices; i++) {
 			if(i%3!=0){
-			color_buffer_data [3*i] = 0.5;
-			color_buffer_data [3*i + 1] = 0.5;
-			color_buffer_data [3*i + 2] = 0.5;
+				color_buffer_data [3*i] = 0.5;
+				color_buffer_data [3*i + 1] = 0.5;
+				color_buffer_data [3*i + 2] = 0.5;
 			}
 			else{
-			color_buffer_data [3*i] = 0.3;
-			color_buffer_data [3*i + 1] = 0.3;
-			color_buffer_data [3*i + 2] = 0.3;
+				color_buffer_data [3*i] = 0.3;
+				color_buffer_data [3*i + 1] = 0.3;
+				color_buffer_data [3*i + 2] = 0.3;
 			}
 		}
 
@@ -1756,56 +1864,56 @@ class Obstacle{
 
 		int numVertices = 72,i;
 		GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
-                for (i=0; i<numVertices; i++) {
-                        vertex_buffer_data [3*i] = 0.66*radius*cos((72*i)*M_PI/180.0f);
-                        vertex_buffer_data [3*i + 1] = 0.66*radius*sin((72*i)*M_PI/180.0f);
-                        vertex_buffer_data [3*i + 2] = 0;
-                }
+		for (i=0; i<numVertices; i++) {
+			vertex_buffer_data [3*i] = 0.66*radius*cos((72*i)*M_PI/180.0f);
+			vertex_buffer_data [3*i + 1] = 0.66*radius*sin((72*i)*M_PI/180.0f);
+			vertex_buffer_data [3*i + 2] = 0;
+		}
 
 
-                GLfloat* color_buffer_data = new GLfloat [3*numVertices];
-                for (i=0; i<numVertices; i++) {
-                        if(i%3!=0){
-                        color_buffer_data [3*i] = 0.5;
-                        color_buffer_data [3*i + 1] = 0.5;
-                        color_buffer_data [3*i + 2] = 0.5;
-                        }
-                        else{
-                        color_buffer_data [3*i] = 0.3;
-                        color_buffer_data [3*i + 1] = 0.3;
-                        color_buffer_data [3*i + 2] = 0.3;
-                        }
-                }
+		GLfloat* color_buffer_data = new GLfloat [3*numVertices];
+		for (i=0; i<numVertices; i++) {
+			if(i%3!=0){
+				color_buffer_data [3*i] = 0.5;
+				color_buffer_data [3*i + 1] = 0.5;
+				color_buffer_data [3*i + 2] = 0.5;
+			}
+			else{
+				color_buffer_data [3*i] = 0.3;
+				color_buffer_data [3*i + 1] = 0.3;
+				color_buffer_data [3*i + 2] = 0.3;
+			}
+		}
 
 
-                // create3DObject creates and returns a handle to a VAO that can be used later
-                obs[1] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
+		// create3DObject creates and returns a handle to a VAO that can be used later
+		obs[1] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
 
 		GLfloat* vertex_buffer_data1 = new GLfloat [3*numVertices];
-                for (i=0; i<numVertices; i++) {
-                        vertex_buffer_data1 [3*i] = 0.33*radius*cos((72*i)*M_PI/180.0f);
-                        vertex_buffer_data1 [3*i + 1] = 0.33*radius*sin((72*i)*M_PI/180.0f);
-                        vertex_buffer_data1 [3*i + 2] = 0;
-                }
+		for (i=0; i<numVertices; i++) {
+			vertex_buffer_data1 [3*i] = 0.33*radius*cos((72*i)*M_PI/180.0f);
+			vertex_buffer_data1 [3*i + 1] = 0.33*radius*sin((72*i)*M_PI/180.0f);
+			vertex_buffer_data1 [3*i + 2] = 0;
+		}
 
 
-                GLfloat* color_buffer_data1 = new GLfloat [3*numVertices];
-                for (i=0; i<numVertices; i++) {
-                        if(i%3!=0){
-                        color_buffer_data1 [3*i] = 0.5;
-                        color_buffer_data1 [3*i + 1] = 0.5;
-                        color_buffer_data1 [3*i + 2] = 0.5;
-                        }
-                        else{
-                        color_buffer_data1 [3*i] = 0.3;
-                        color_buffer_data1 [3*i + 1] = 0.3;
-                        color_buffer_data1 [3*i + 2] = 0.3;
-                        }
-                }
+		GLfloat* color_buffer_data1 = new GLfloat [3*numVertices];
+		for (i=0; i<numVertices; i++) {
+			if(i%3!=0){
+				color_buffer_data1 [3*i] = 0.5;
+				color_buffer_data1 [3*i + 1] = 0.5;
+				color_buffer_data1 [3*i + 2] = 0.5;
+			}
+			else{
+				color_buffer_data1 [3*i] = 0.3;
+				color_buffer_data1 [3*i + 1] = 0.3;
+				color_buffer_data1 [3*i + 2] = 0.3;
+			}
+		}
 
 
-                // create3DObject creates and returns a handle to a VAO that can be used later
-                obs[2] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data1, color_buffer_data1, GL_FILL);
+		// create3DObject creates and returns a handle to a VAO that can be used later
+		obs[2] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data1, color_buffer_data1, GL_FILL);
 
 
 	}
@@ -2768,16 +2876,16 @@ void initGL (GLFWwindow* window, int width, int height)
 	}
 
 	for(j=0;j<2;j++){
-	//light[j].posx = (((j)-15)*0.25) + 0.25;
-	//light[j].posy = 3.0 + pow(-1,(j)%2)*0.25;
-	light[j].posx = ((float)((float)(rand()%5) + (-2.5f)));
-	light[j].posy = ((float)((float)(rand()%5) + (-2.5f)));
-	light[j].radius = 0.05;
-	light[j].show = true;
-	light[j].create();
+		//light[j].posx = (((j)-15)*0.25) + 0.25;
+		//light[j].posy = 3.0 + pow(-1,(j)%2)*0.25;
+		light[j].posx = ((float)((float)(rand()%5) + (-2.5f)));
+		light[j].posy = ((float)((float)(rand()%5) + (-2.5f)));
+		light[j].radius = 0.05;
+		light[j].show = true;
+		light[j].create();
 	}
-	
-	
+
+
 	varys[0].createBody();
 	varys[0].createLegs();
 
@@ -2926,11 +3034,13 @@ int main (int argc, char** argv)
 		border[1].draw(2);
 		border[2].draw(1);
 		border[3].draw(3);
-		portal[0].draw();
-		portal[1].draw();
+		for(i=0;i<5;i++){
+			portal[0].draw(0,i);
+			portal[1].draw(0,i);
+		}
 		if(!angryBird.allowed){
-			portal[2].draw();
-			portal[3].draw();
+			portal[2].draw(1,0);
+			portal[3].draw(1,0);
 		}
 		angryBird.draw(1);
 		angryBird.draw(0);
@@ -2958,7 +3068,7 @@ int main (int argc, char** argv)
 			obstacle[i].draw(1);
 			obstacle[i].draw(2);
 
-			}
+		}
 		for(i=0;i<2;i++){
 			if(light[i].show)
 				light[i].draw();
