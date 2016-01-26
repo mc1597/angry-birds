@@ -776,21 +776,21 @@ class Portal{
 
 				GLfloat* color_buffer_data = new GLfloat [3*numVertices];
 				for (i=0; i<numVertices; i++) {
-					if(i%4==0){
+					//if(i%4==0){
 						color_buffer_data [3*i] = 1;
 						color_buffer_data [3*i + 1] = 1;
 						color_buffer_data [3*i + 2] = 1;
-					}
-					else{
-						color_buffer_data [3*i] = 0.2;
-						color_buffer_data [3*i + 1] = 0.7;
-						color_buffer_data [3*i + 2] = 1;
-					}
+					//}
+					//else{
+					//	color_buffer_data [3*i] = 0.2;
+					//	color_buffer_data [3*i + 1] = 0.7;
+					//	color_buffer_data [3*i + 2] = 1;
+					//}
 				}
 
 				layer[0] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
 
-				GLfloat* vertex_buffer_data1 = new GLfloat [3*numVertices];
+				/*GLfloat* vertex_buffer_data1 = new GLfloat [3*numVertices];
 				for (i=0; i<numVertices; i++) {
 					vertex_buffer_data1 [3*i] =  0.8*radius*cos(i*M_PI/180.0f);
 					vertex_buffer_data1 [3*i + 1] =  0.8*radius*sin(i*M_PI/180.0f);
@@ -887,7 +887,7 @@ class Portal{
 				}
 
 				layer[4] = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data4, color_buffer_data4, GL_FILL);
-
+				*/
 
 			}
 			else{
@@ -901,16 +901,16 @@ class Portal{
 
 				GLfloat* color_buffer_data = new GLfloat [3*numVertices];
 				for (i=0; i<numVertices; i++) {
-					if(i%4!=3){
-					color_buffer_data [3*i] = 0.5;
-					color_buffer_data [3*i + 1] = 0.5;
-					color_buffer_data [3*i + 2] = 0.5;
-					}
-					else{
+					//if(i%4!=3){
+					color_buffer_data [3*i] = 1;
+					color_buffer_data [3*i + 1] = 0;
+					color_buffer_data [3*i + 2] = 0;
+					//}
+					/*else{
 					color_buffer_data [3*i] = 1;
 					color_buffer_data [3*i + 1] = 1;
 					color_buffer_data [3*i + 2] = 1;
-					}
+					}*/
 				}
 
 
@@ -3034,10 +3034,10 @@ int main (int argc, char** argv)
 		border[1].draw(2);
 		border[2].draw(1);
 		border[3].draw(3);
-		for(i=0;i<5;i++){
-			portal[0].draw(0,i);
-			portal[1].draw(0,i);
-		}
+		//for(i=0;i<5;i++){
+		portal[0].draw(0,0);
+		portal[1].draw(0,0);
+		//}
 		if(!angryBird.allowed){
 			portal[2].draw(1,0);
 			portal[3].draw(1,0);
